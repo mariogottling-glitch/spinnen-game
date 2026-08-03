@@ -34,6 +34,7 @@ func _run() -> void:
 	assert(game.how_to_button.button_down.is_connected(game._show_how_to))
 	assert(game.settings_button.button_down.is_connected(game._show_settings))
 	assert(game.update_button.button_down.is_connected(game._open_android_update))
+	assert(game.lure_button.button_down.is_connected(game._pluck_web))
 	game._toggle_reduced_motion()
 	assert(game.reduced_motion)
 	game.play_button.button_down.emit()
@@ -95,6 +96,36 @@ func _run() -> void:
 	assert(game.insects.is_empty())
 	game._apply_upgrade_effect("spider_queen")
 	assert(game.helper_spiders.size() == 4)
+
+	# Living Web: closed geometry becomes an active trap and hubs repair the web.
+	game._add_edge(0, 12)
+	game._add_edge(12, 13)
+	game._add_edge(13, 0)
+	game._add_edge(0, 14)
+	game._refresh_web_glyphs()
+	var triangle_count := 0
+	var heart_count := 0
+	for glyph in game.web_glyphs:
+		if glyph["type"] == "triangle":
+			triangle_count += 1
+		elif glyph["type"] == "heart":
+			heart_count += 1
+	assert(triangle_count >= 1)
+	assert(heart_count >= 1)
+	var triangle_center: Vector2 = (game.anchors[0] + game.anchors[12] + game.anchors[13]) / 3.0
+	assert(not game._triangle_glyph_at(triangle_center).is_empty())
+	game.vibration = 0.0
+	game.lure_cooldown = 0.0
+	game.flight_warnings.clear()
+	game._pluck_web()
+	assert(game.vibration >= 34.0)
+	assert(game.flight_warnings.size() == 3)
+	assert(game.lure_cooldown > 0.0)
+	var insect_count_before_warning: int = game.insects.size()
+	game._update_flight_warnings(3.0)
+	assert(game.flight_warnings.is_empty())
+	assert(game.insects.size() == insect_count_before_warning + 3)
+	game.insects.clear()
 
 	game.insects.clear()
 	game._spawn_insect()

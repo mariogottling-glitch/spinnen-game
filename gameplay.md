@@ -732,3 +732,36 @@ oder lehnt beide für eine normale Jagd ab. Beispiele:
 Der Zufall erzeugt Abwechslung, die Wahl erhält die Kontrolle. Später können Käfer
 (schwere Beute für verstärkte Kreuzungen) und Libellen (mehrere schnelle Anflüge)
 als weitere Minibosse folgen.
+
+---
+
+# 26. Living Web – Netzgeometrie als Build (umgesetzt)
+
+Das Netz ist nicht mehr nur eine Sammlung einzelner Fanglinien. Seine Geometrie
+erzeugt eigene, sofort sichtbare Werkzeuge:
+
+- **Fangtasche:** Drei aktive Fäden bilden ein Dreieck. Beute innerhalb der
+  geschlossenen Fläche benötigt 22 Prozent weniger Haltekraft und bleibt 45 Prozent
+  länger gefangen. Mehrere schnelle Fänge in Fangtaschen erhöhen Nahrung und XP
+  als zeitlich begrenzte Kombo.
+- **Seidenherz:** Ein Knoten mit mindestens vier aktiven Verbindungen repariert
+  regelmäßig alle angrenzenden Fäden. Dafür erzeugt er dauerhaft eine kleine Menge
+  Vibration und ist damit ein starker, aber nicht kostenloser Netzkern.
+- Reißt ein benötigter Faden, verschwindet die Glyphe. Wird die Form repariert,
+  erwacht sie erneut. Der Spieler baut und verteidigt dadurch funktionale Formen.
+
+## Flugkorridore und Vibration
+
+Beute erscheint nicht mehr ohne Vorwarnung. Eine kurze gestrichelte Flugbahn mit
+Richtungspfeil zeigt Höhe, Richtung und ungefähre Ankunftszeit. Seltene Beute wird
+länger und farblich deutlicher angekündigt, sodass gezieltes Reagieren möglich ist.
+
+Ab drei aktiven Fäden kann der Spieler das Netz mit **Netz zupfen** bewusst reizen:
+
+- Drei wertvollere Tiere werden in angekündigten, leicht versetzten Korridoren angelockt.
+- Vibration steigert Spawnrate und Chance auf wertvolle Beute.
+- Gleichzeitig verursachen kämpfende Tiere und Wind mehr Fadenschaden.
+- Vibration klingt wieder ab; die Aktion besitzt acht Sekunden Abklingzeit.
+
+Der neue Kernrhythmus lautet damit: Form planen, Anflug lesen, Risiko auslösen,
+Fangtaschen ausnutzen, Kombo sichern und belastete Knoten reparieren.

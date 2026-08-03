@@ -764,3 +764,23 @@ verwendet dieselbe Waldwelt wie das Gameplay.
 
 Die Menüstruktur ist für spätere Ergänzungen wie Spielstand, Perk-Sammlung,
 tägliche Aufgaben oder Shop vorbereitet, ohne diese Funktionen vorzutäuschen.
+
+---
+
+# 32. Living-Web-Feedback
+
+Aktive Netzfunktionen bleiben Teil der Waldwelt und werden nicht als große
+Interface-Flächen über die Karte gelegt.
+
+- Fangtaschen erhalten nur eine transparente kühlblaue Fläche, eine feine Kontur
+  und ein kleines Glyphenzeichen im Schwerpunkt.
+- Seidenherzen pulsieren warmgolden direkt auf dem jeweiligen Knoten.
+- Flugkorridore sind dünne, gestrichelte Linien mit einem Richtungspfeil am Rand;
+  ihre Farbe folgt der Wertigkeit der Beute.
+- Die Vibrationsanzeige verwendet eine kurze Zustandsbezeichnung: ruhig, aktiv
+  oder gefährlich. Orange bleibt der Warnstufe vorbehalten.
+- Der Knopf „Netz zupfen“ sitzt griffnah am unteren rechten Rand und erscheint
+  erst, sobald ein funktionierendes Netz mit mindestens drei Fäden existiert.
+
+Alle Effekte pulsieren langsam und mit niedriger Deckkraft. Das Netz bleibt das
+Kunstwerk; die Systeminformation erklärt es, ohne die Illustration zu verdecken.

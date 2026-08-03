@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource path="res://scripts/main.gd" type="Script" id="1_main"]
 [ext_resource path="res://assets/ui/upgrade-silk-v1.png" type="Texture2D" id="2_silk"]
@@ -128,6 +128,13 @@ corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xp_fill"]
 bg_color = Color(0.486, 0.78, 0.91, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vibration_fill"]
+bg_color = Color(0.91, 0.42, 0.27, 1)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -436,6 +443,37 @@ theme_override_font_sizes/font_size = 19
 text = "BUILD: NOCH OFFEN"
 horizontal_alignment = 1
 
+[node name="VibrationLabel" type="Label" parent="HUD"]
+offset_left = 72.0
+offset_top = 382.0
+offset_right = 492.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(0.91, 0.42, 0.27, 0.95)
+theme_override_font_sizes/font_size = 18
+text = "VIBRATION 0 % · RUHIG"
+
+[node name="VibrationBar" type="ProgressBar" parent="HUD"]
+offset_left = 72.0
+offset_top = 414.0
+offset_right = 492.0
+offset_bottom = 430.0
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vibration_fill")
+show_percentage = false
+
+[node name="GlyphSummary" type="Label" parent="HUD"]
+offset_left = 520.0
+offset_top = 382.0
+offset_right = 1008.0
+offset_bottom = 430.0
+theme_override_colors/font_color = Color(0.957, 0.773, 0.337, 0.9)
+theme_override_colors/font_shadow_color = Color(0.035, 0.09, 0.063, 0.8)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 18
+text = "NETZGLYPHEN: NOCH KEINE"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="MenuButton" type="Button" parent="HUD"]
 offset_left = 900.0
 offset_top = 164.0
@@ -448,6 +486,23 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_menu_secondary")
 theme_override_styles/hover = SubResource("StyleBoxFlat_menu_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_menu_secondary_hover")
 text = "MENÜ"
+
+[node name="LureButton" type="Button" parent="HUD"]
+visible = false
+offset_left = 820.0
+offset_top = 1640.0
+offset_right = 1018.0
+offset_bottom = 1714.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0.973, 0.961, 0.922, 0.95)
+theme_override_colors/font_disabled_color = Color(0.973, 0.961, 0.922, 0.4)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.52, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_menu_secondary")
+theme_override_styles/hover = SubResource("StyleBoxFlat_menu_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_menu_secondary_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_menu_secondary")
+text = "NETZ ZUPFEN"
 
 [node name="UpgradeOverlay" type="ColorRect" parent="HUD"]
 visible = false
@@ -1019,7 +1074,7 @@ offset_right = 840.0
 offset_bottom = 1800.0
 theme_override_colors/font_color = Color(0.973, 0.961, 0.922, 0.46)
 theme_override_font_sizes/font_size = 18
-text = "VERSION 0.6.0-test.2"
+text = "VERSION 0.7.0-test.1"
 horizontal_alignment = 1
 
 [node name="HowToOverlay" type="ColorRect" parent="StartMenu"]

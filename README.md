@@ -24,6 +24,9 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Thread health, aging, wind damage, and global web integrity
 - Textured multi-fiber silk, reinforced braids, sticky dew strands, and illustrated web knots
 - Food objectives followed by a multi-hit wasp miniboss with an active timing-based bite duel
+- Living Web geometry: triangular capture pockets and self-repairing four-way silk hearts
+- Telegraph flight corridors that reveal approach direction before valuable prey enters
+- Player-triggered web pluck with escalating vibration, better prey, combos, and extra thread strain
 - Increasing hunt targets while the web and chosen build persist between levels
 - Run restart after complete web collapse
 - AI-generated forest, spider, insects, and spider animation sheets based on `design.md`
@@ -58,8 +61,7 @@ Press `B` to summon the current level's wasp miniboss immediately for testing.
 
 ## Next vertical-slice milestones
 
-1. Tune movement, anchor timing, capture rate, and run pacing from playtests.
-2. Add several insects with distinct movement and weight.
-3. Add visible thread tension and local break animations.
-4. Replace generic upgrades with the first real build synergies.
-5. Produce the first coherent art-direction pass.
+1. Tune Living Web rewards, vibration decay, and hunt pacing from Android playtests.
+2. Add a second geometric glyph and an insect that specifically counters large pockets.
+3. Add visible local thread tension and break animations.
+4. Add optional hunt contracts that remix risk and rewards between levels.
