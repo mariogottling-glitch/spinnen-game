@@ -15,6 +15,7 @@ const GAME_BACKGROUND: Texture2D = preload("res://assets/backgrounds/forest-fade
 const CONTRACT_BEETLE: Texture2D = preload("res://assets/ui/contracts/beetle-fadenschnitt-v1.png")
 const CONTRACT_DRAGONFLY: Texture2D = preload("res://assets/ui/contracts/dragonfly-fadenschnitt-v1.png")
 const CONTRACT_FIREFLY: Texture2D = preload("res://assets/ui/contracts/firefly-fadenschnitt-v1.png")
+const THREAD_OVERLAY: Texture2D = preload("res://assets/ui/fadenschnitt-thread-overlay-v1.png")
 const PALETTE_SHADER: Shader = preload("res://assets/shaders/fadenschnitt_palette.gdshader")
 
 
@@ -118,12 +119,14 @@ static func _apply_start_menu(root: Node) -> void:
 	var update := root.get_node("StartMenu/MenuCard/UpdateButton") as Button
 	_style_menu_button(update, Vector2(790, 70), Vector2(220, 78), false)
 	update.add_theme_font_size_override("font_size", 24)
+	update.text = "UPDATE LADEN"
 
 	var version := root.get_node("StartMenu/Version") as Label
 	version.position = Vector2(240, 1775)
 	version.size = Vector2(600, 40)
 	version.add_theme_font_override("font", DISPLAY_FONT)
 	version.add_theme_color_override("font_color", Color(SILK, 0.56))
+	version.text = "VERSION 0.10.1-test.2  ·  FADENSCHNITT"
 
 
 static func _style_menu_button(button: Button, position: Vector2, size: Vector2, primary: bool) -> void:
@@ -336,21 +339,13 @@ static func _add_overlay_art(overlay: Control, background_alpha: float, thread_a
 	thread.name = "FadenschnittThread"
 	thread.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	thread.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	thread.texture = _load_thread_overlay()
+	thread.texture = THREAD_OVERLAY
 	thread.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	thread.stretch_mode = TextureRect.STRETCH_SCALE
 	thread.position = Vector2(170, 0)
 	thread.modulate = Color(1.0, 1.0, 1.0, thread_alpha)
 	thread.z_index = 10
 	overlay.add_child(thread)
-
-
-static func _load_thread_overlay() -> Texture2D:
-	var image := Image.load_from_file("res://assets/ui/fadenschnitt-thread-overlay-v1.png")
-	if image.is_empty():
-		return null
-	return ImageTexture.create_from_image(image)
-
 
 static func _box(
 	background: Color,

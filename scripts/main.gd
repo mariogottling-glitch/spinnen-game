@@ -360,6 +360,54 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+func _input(event: InputEvent) -> void:
+	# Handle menu taps before Android's touch-to-mouse emulation reaches the GUI.
+	# This keeps the main navigation usable even when a full-screen Control or a
+	# device-specific emulated mouse event would otherwise swallow the press.
+	if not menu_open or not start_menu.visible:
+		return
+	var tap_position := Vector2.ZERO
+	if event is InputEventScreenTouch:
+		if not event.pressed:
+			return
+		tap_position = event.position
+	elif event is InputEventMouseButton:
+		if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+			return
+		tap_position = event.position
+	else:
+		return
+
+	if _activate_menu_control_at(tap_position):
+		get_viewport().set_input_as_handled()
+
+
+func _activate_menu_control_at(tap_position: Vector2) -> bool:
+	if how_to_overlay.visible:
+		if how_to_back_button.get_global_rect().has_point(tap_position):
+			_close_menu_panel()
+		return true
+	if settings_overlay.visible:
+		if motion_button.get_global_rect().has_point(tap_position):
+			_toggle_reduced_motion()
+		elif reset_button.get_global_rect().has_point(tap_position):
+			_prepare_new_run()
+		elif settings_back_button.get_global_rect().has_point(tap_position):
+			_close_menu_panel()
+		return true
+	if play_button.get_global_rect().has_point(tap_position):
+		_start_game_from_menu()
+	elif how_to_button.get_global_rect().has_point(tap_position):
+		_show_how_to()
+	elif settings_button.get_global_rect().has_point(tap_position):
+		_show_settings()
+	elif update_button.get_global_rect().has_point(tap_position):
+		_open_android_update()
+	else:
+		return false
+	return true
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		if menu_open:
