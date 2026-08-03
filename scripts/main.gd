@@ -1,7 +1,7 @@
 extends Node2D
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
-const ANDROID_UPDATE_URL := "https://github.com/mariogottling-glitch/spinnen-game/releases/latest"
+const ANDROID_UPDATE_URL := "https://github.com/mariogottling-glitch/spinnen-game/releases/latest/download/web-weaver-android.apk?download=1"
 const FOREST := Color("#2F6B45")
 const DARK_MOSS := Color("#214233")
 const LEAF := Color("#6DAE5B")
@@ -232,6 +232,50 @@ func _process(delta: float) -> void:
 	_update_ambience(delta)
 	_update_hud()
 	queue_redraw()
+
+
+func _input(event: InputEvent) -> void:
+	if not menu_open or not event is InputEventScreenTouch or not event.pressed:
+		return
+	if _handle_menu_touch(event.position):
+		get_viewport().set_input_as_handled()
+
+
+func _handle_menu_touch(screen_position: Vector2) -> bool:
+	if how_to_overlay.visible:
+		if _control_contains_screen_point(how_to_back_button, screen_position):
+			_close_menu_panel()
+			return true
+		return false
+	if settings_overlay.visible:
+		if _control_contains_screen_point(motion_button, screen_position):
+			_toggle_reduced_motion()
+			return true
+		if _control_contains_screen_point(reset_button, screen_position):
+			_prepare_new_run()
+			return true
+		if _control_contains_screen_point(settings_back_button, screen_position):
+			_close_menu_panel()
+			return true
+		return false
+	if _control_contains_screen_point(play_button, screen_position):
+		_start_game_from_menu()
+		return true
+	if _control_contains_screen_point(how_to_button, screen_position):
+		_show_how_to()
+		return true
+	if _control_contains_screen_point(settings_button, screen_position):
+		_show_settings()
+		return true
+	if _control_contains_screen_point(update_button, screen_position):
+		_open_android_update()
+		return true
+	return false
+
+
+func _control_contains_screen_point(control: Control, screen_position: Vector2) -> bool:
+	var local_position := control.get_global_transform_with_canvas().affine_inverse() * screen_position
+	return Rect2(Vector2.ZERO, control.size).has_point(local_position)
 
 
 func _unhandled_input(event: InputEvent) -> void:
