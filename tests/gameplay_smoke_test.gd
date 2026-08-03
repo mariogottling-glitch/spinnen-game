@@ -63,6 +63,7 @@ func _run() -> void:
 	for contract in game.offered_contracts:
 		contract_ids[contract["id"]] = true
 	assert(contract_ids.size() == 3)
+	await process_frame
 	game._choose_contract(0)
 	assert(not game.contract_open)
 	assert(not game.contract_overlay.visible)

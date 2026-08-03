@@ -1121,7 +1121,8 @@ func _open_contract_selection() -> void:
 	var cards: Array[Button] = [contract_one, contract_two, contract_three]
 	for i in range(cards.size()):
 		_configure_contract_card(cards[i], offered_contracts[i])
-		cards[i].disabled = false
+		# Keep the menu-start tap from falling through into a contract card.
+		cards[i].disabled = true
 		cards[i].scale = Vector2(0.84, 0.84)
 		cards[i].modulate = Color(1.0, 1.0, 1.0, 0.0)
 		var tween := create_tween()
@@ -1130,6 +1131,10 @@ func _open_contract_selection() -> void:
 		tween.tween_property(cards[i], "modulate", Color.WHITE, 0.18).set_delay(float(i) * 0.07)
 	status_label.text = "WÄHLE EINEN JAGDVERTRAG"
 	hint_label.text = "RISIKO UND BELOHNUNG GELTEN BIS ZUM MINIBOSS"
+	await get_tree().process_frame
+	if contract_open:
+		for card in cards:
+			card.disabled = false
 
 
 func _configure_contract_card(card: Button, contract: Dictionary) -> void:
