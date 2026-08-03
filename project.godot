@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Web Weaver"
-config/version="0.4.0-test.1"
+config/version="0.4.0-test.2"
 config/icon="res://assets/sprites/spider-v2.png"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
