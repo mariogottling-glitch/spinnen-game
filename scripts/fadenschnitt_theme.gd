@@ -126,7 +126,7 @@ static func _apply_start_menu(root: Node) -> void:
 	version.size = Vector2(600, 40)
 	version.add_theme_font_override("font", DISPLAY_FONT)
 	version.add_theme_color_override("font_color", Color(SILK, 0.56))
-	version.text = "VERSION 0.10.1-test.2  ·  FADENSCHNITT"
+	version.text = "VERSION 0.11.0-test.3  ·  FADENSCHNITT"
 
 
 static func _style_menu_button(button: Button, position: Vector2, size: Vector2, primary: bool) -> void:
@@ -258,7 +258,7 @@ static func _apply_upgrades(root: Node) -> void:
 	heading.add_theme_color_override("font_shadow_color", Color.TRANSPARENT)
 	var icon_material := ShaderMaterial.new()
 	icon_material.shader = PALETTE_SHADER
-	icon_material.set_shader_parameter("palette_strength", 0.82)
+	icon_material.set_shader_parameter("palette_strength", 1.0)
 	var cards: Array[Button] = [
 		root.get_node("HUD/UpgradeOverlay/UpgradeOne") as Button,
 		root.get_node("HUD/UpgradeOverlay/UpgradeTwo") as Button,

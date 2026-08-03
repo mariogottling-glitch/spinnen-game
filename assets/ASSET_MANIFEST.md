@@ -169,3 +169,35 @@ warm-silk stroke with three irregular loops on a flat magenta key. The prompt
 excluded cards, icons, text, foliage, lighting, realistic fibers and shadows.
 After chroma removal it was resized to 1080 x 1920 and is loaded as a raw PNG so
 the same signature line can sit above multiple dynamic Godot overlays.
+
+## Native Fadenschnitt creature pass
+
+The built-in ImageGen tool created the complete visible gameplay roster in
+`stylized-concept` mode. Every prompt used
+`artifacts/fadenschnitt-style-target-v1.png` as the binding style reference and
+required strict top-down framing, simplified cut-paper silhouettes, imperfect
+screen-print edges, sparse halftone and only these six colors: `#102A24`,
+`#315A45`, `#A7C46A`, `#F2E8D5`, `#F28C28`, `#E3564A`.
+
+All sources were generated on a flat magenta chroma background. Local removal
+used soft matte, despill and one-pixel edge contraction. The chroma sources are
+preserved in `assets/generated-sources/`; the production RGBA files are:
+
+- `sprites/spider-fadenschnitt-v1.png`
+- `sprites/spider-crawl-fadenschnitt-v1.png`: four alternating crawl poses in a 2×2 sheet
+- `sprites/spider-jump-fadenschnitt-v1.png`: anticipation, takeoff, tuck and landing in a 2×2 sheet
+- `sprites/fly-fadenschnitt-v1.png`
+- `sprites/moth-fadenschnitt-v1.png`
+- `sprites/bee-fadenschnitt-v1.png`
+- `sprites/wasp-fadenschnitt-v1.png`
+- `sprites/boss-wasp-queen-fadenschnitt-v1.png`
+- `sprites/boss-titan-beetle-fadenschnitt-v1.png`
+- `sprites/boss-razor-hornet-fadenschnitt-v1.png`
+
+The prompt set explicitly excluded gradients, gloss, 3D rendering, realistic or
+painterly detail, fantasy ornament, scenery, text, shadows and watermarks. The
+existing contract portraits for beetle, dragonfly and firefly are now reused by
+the gameplay renderer so contract choice and live encounter share one identity.
+
+The approved target and every final creature are compared in
+`artifacts/fadenschnitt-creature-audit-v1.png`.

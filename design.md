@@ -729,3 +729,27 @@ Schnittkante, Raster und Seidenlinie als Web Weaver erkennbar sein.
 Die freigegebene visuelle Referenz liegt unter
 `artifacts/fadenschnitt-style-target-v1.png`. Die ausführbaren Referenzstände für
 Menü, Verträge, Upgrades und Gameplay werden in `artifacts/` gepflegt.
+
+## Native Kreaturenbibliothek
+
+Alle im laufenden Spiel sichtbaren Kreaturen verwenden native Fadenschnitt-Assets.
+Alte weich gemalte oder halb-dreidimensionale Sprites dürfen nicht mehr im Renderer
+referenziert werden.
+
+- Die Hauptspinne besitzt ein eigenes Standbild sowie getrennte 2×2-Sheets für
+  Krabbeln und Springen. Körper, Markierung, Perspektive und Größe bleiben in
+  jedem Frame stabil.
+- Fliege, Motte und Biene sind kleine, einfache Silhouetten mit höchstens drei
+  Papierlagen. Ihre Wertigkeit wird zuerst durch Form und Tempo, nicht durch Farbe erklärt.
+- Panzerkäfer, Libelle und Glühwürmchen verwenden dieselben Illustrationen in
+  Vertrag und Gameplay, damit Auswahl und spätere Begegnung eindeutig zusammengehören.
+- Elitewespe, Wespenkönigin, Titan-Käfer und Klingenhornisse besitzen jeweils eine
+  eigenständige Boss-Silhouette. Eine eingefärbte Wiederverwendung ist nicht zulässig.
+- Helferspinnen verwenden verkleinerte Krabbelframes der Hauptspinne; der Build
+  bleibt dadurch als zusammengehörige Brut lesbar.
+- Auch das Android-Appsymbol verwendet die native Fadenschnitt-Spinne.
+
+Perk-Illustrationen bleiben individuell. Solange ein Motiv noch aus der ersten
+Assetgeneration stammt, wird es im Upgrade-Screen vollständig auf die sechs
+Fadenschnittfarben quantisiert. Dadurch dürfen weder Fremdfarben noch Glanz- oder
+3D-Licht im sichtbaren Spiel verbleiben.

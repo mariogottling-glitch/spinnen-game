@@ -12,19 +12,20 @@ const SKY := Color("#7DC7E8")
 const BERRY := Color("#9B6AA6")
 
 const BACKGROUND_TEXTURE: Texture2D = preload("res://assets/backgrounds/forest-fadenschnitt-v1.png")
-const SPIDER_TEXTURE: Texture2D = preload("res://assets/sprites/spider-v2.png")
-const SPIDER_CRAWL_TEXTURE: Texture2D = preload("res://assets/sprites/spider-crawl-sheet-v1.png")
-const SPIDER_JUMP_TEXTURE: Texture2D = preload("res://assets/sprites/spider-jump-sheet-v1.png")
-const MOTH_TEXTURE: Texture2D = preload("res://assets/sprites/moth-v2.png")
-const FLY_TEXTURE: Texture2D = preload("res://assets/sprites/fly-v1.png")
-const BEE_TEXTURE: Texture2D = preload("res://assets/sprites/bee-v1.png")
-const WASP_TEXTURE: Texture2D = preload("res://assets/sprites/wasp-miniboss-v1.png")
-const BEETLE_TEXTURE: Texture2D = preload("res://assets/sprites/beetle-v1.png")
-const DRAGONFLY_TEXTURE: Texture2D = preload("res://assets/sprites/dragonfly-v1.png")
-const FIREFLY_TEXTURE: Texture2D = preload("res://assets/sprites/firefly-v1.png")
-const WASP_QUEEN_TEXTURE: Texture2D = preload("res://assets/sprites/boss-wasp-queen-v1.png")
-const TITAN_BEETLE_TEXTURE: Texture2D = preload("res://assets/sprites/boss-titan-beetle-v1.png")
-const RAZOR_HORNET_TEXTURE: Texture2D = preload("res://assets/sprites/boss-razor-hornet-v1.png")
+const SPIDER_TEXTURE: Texture2D = preload("res://assets/sprites/spider-fadenschnitt-v1.png")
+const SPIDER_CRAWL_TEXTURE: Texture2D = preload("res://assets/sprites/spider-crawl-fadenschnitt-v1.png")
+const SPIDER_JUMP_TEXTURE: Texture2D = preload("res://assets/sprites/spider-jump-fadenschnitt-v1.png")
+const MOTH_TEXTURE: Texture2D = preload("res://assets/sprites/moth-fadenschnitt-v1.png")
+const FLY_TEXTURE: Texture2D = preload("res://assets/sprites/fly-fadenschnitt-v1.png")
+const BEE_TEXTURE: Texture2D = preload("res://assets/sprites/bee-fadenschnitt-v1.png")
+const WASP_TEXTURE: Texture2D = preload("res://assets/sprites/wasp-fadenschnitt-v1.png")
+const BEETLE_TEXTURE: Texture2D = preload("res://assets/ui/contracts/beetle-fadenschnitt-v1.png")
+const DRAGONFLY_TEXTURE: Texture2D = preload("res://assets/ui/contracts/dragonfly-fadenschnitt-v1.png")
+const FIREFLY_TEXTURE: Texture2D = preload("res://assets/ui/contracts/firefly-fadenschnitt-v1.png")
+const WASP_QUEEN_TEXTURE: Texture2D = preload("res://assets/sprites/boss-wasp-queen-fadenschnitt-v1.png")
+const TITAN_BEETLE_TEXTURE: Texture2D = preload("res://assets/sprites/boss-titan-beetle-fadenschnitt-v1.png")
+const RAZOR_HORNET_TEXTURE: Texture2D = preload("res://assets/sprites/boss-razor-hornet-fadenschnitt-v1.png")
+const FADENSCHNITT_DISPLAY_FONT: Font = preload("res://assets/fonts/BarlowCondensed-SemiBold.ttf")
 const THREAD_NATURAL_TEXTURE: Texture2D = preload("res://assets/web/thread-natural-v1.png")
 const THREAD_REINFORCED_TEXTURE: Texture2D = preload("res://assets/web/thread-reinforced-v1.png")
 const THREAD_STICKY_TEXTURE: Texture2D = preload("res://assets/web/thread-sticky-v1.png")
@@ -2321,7 +2322,7 @@ func _draw_insects() -> void:
 		_draw_texture_centered(texture, position, scale, rotation, insect_tint)
 		if kind in ["beetle", "dragonfly", "firefly"] and not insect["caught"]:
 			var special_names := {"beetle": "PANZERKÄFER", "dragonfly": "LIBELLE", "firefly": "GLÜHWÜRMCHEN"}
-			draw_string(ThemeDB.fallback_font, position + Vector2(-76.0, -58.0), special_names[kind], HORIZONTAL_ALIGNMENT_CENTER, 152.0, 17, CREAM)
+			draw_string(FADENSCHNITT_DISPLAY_FONT, position + Vector2(-76.0, -58.0), special_names[kind], HORIZONTAL_ALIGNMENT_CENTER, 152.0, 17, CREAM)
 		if insect["caught"] and not insect["auto_collect"] and not is_bite_target:
 			draw_arc(position, 72.0 + sin(elapsed_time * 10.0) * 4.0, 0.0, TAU, 32, Color(CREAM, 0.5), 3.0, true)
 
@@ -2347,7 +2348,7 @@ func _draw_bite_timing() -> void:
 	for hit in range(hit_count):
 		draw_circle(position + Vector2((float(hit) - float(hit_count - 1) * 0.5) * 24.0, -158.0), 8.0, ORANGE)
 		draw_arc(position + Vector2((float(hit) - float(hit_count - 1) * 0.5) * 24.0, -158.0), 8.0, 0.0, TAU, 16, CREAM, 2.0, true)
-	draw_string(ThemeDB.fallback_font, position + Vector2(-88.0, 166.0), "JETZT BEISSEN", HORIZONTAL_ALIGNMENT_CENTER, 176.0, 24, CREAM)
+	draw_string(FADENSCHNITT_DISPLAY_FONT, position + Vector2(-88.0, 166.0), "JETZT BEISSEN", HORIZONTAL_ALIGNMENT_CENTER, 176.0, 24, CREAM)
 
 
 func _create_pollen() -> void:
