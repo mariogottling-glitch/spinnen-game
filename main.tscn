@@ -237,6 +237,34 @@ corner_radius_top_right = 72
 corner_radius_bottom_right = 72
 corner_radius_bottom_left = 72
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_update_normal"]
+bg_color = Color(0.035, 0.09, 0.063, 0.9)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.957, 0.773, 0.337, 0.72)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+shadow_color = Color(0.012, 0.047, 0.03, 0.64)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_update_hover"]
+bg_color = Color(0.16, 0.28, 0.17, 0.96)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 0.9, 0.58, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+shadow_color = Color(1, 0.72, 0.16, 0.32)
+shadow_size = 16
+
 [node name="WebWeaver" type="Node2D"]
 script = ExtResource("1_main")
 
@@ -991,6 +1019,23 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_hotspot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_menu_hotspot_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_menu_hotspot_pressed")
 text = "EINSTELLUNGEN"
+
+[node name="UpdateButton" type="Button" parent="StartMenu/MenuCard"]
+offset_left = 790.0
+offset_top = 58.0
+offset_right = 1030.0
+offset_bottom = 132.0
+tooltip_text = "Neueste Android-Testversion herunterladen"
+theme_override_colors/font_color = Color(1, 0.88, 0.52, 1)
+theme_override_colors/font_hover_color = Color(1, 0.96, 0.76, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.96, 0.76, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.071, 0.044, 0.9)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_update_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_update_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_update_hover")
+text = "UPDATE"
 
 [node name="Version" type="Label" parent="StartMenu"]
 visible = false

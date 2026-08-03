@@ -24,6 +24,8 @@ func _run() -> void:
 	assert(game.start_menu.visible)
 	assert(not game.hud.visible)
 	assert(game.play_button.text == "JAGD BEGINNEN")
+	assert(game.update_button.text == "UPDATE")
+	assert(game.ANDROID_UPDATE_URL.ends_with("/web-weaver-android.apk"))
 	game._toggle_reduced_motion()
 	assert(game.reduced_motion)
 	game._start_game_from_menu()

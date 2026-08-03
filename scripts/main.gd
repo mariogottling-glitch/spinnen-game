@@ -1,6 +1,7 @@
 extends Node2D
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
+const ANDROID_UPDATE_URL := "https://github.com/mariogottling-glitch/spinnen-game/releases/latest/download/web-weaver-android.apk"
 const FOREST := Color("#2F6B45")
 const DARK_MOSS := Color("#214233")
 const LEAF := Color("#6DAE5B")
@@ -172,6 +173,7 @@ var menu_transitioning := false
 @onready var play_button: Button = $StartMenu/MenuCard/PlayButton
 @onready var how_to_button: Button = $StartMenu/MenuCard/HowToButton
 @onready var settings_button: Button = $StartMenu/MenuCard/SettingsButton
+@onready var update_button: Button = $StartMenu/MenuCard/UpdateButton
 @onready var how_to_overlay: ColorRect = $StartMenu/HowToOverlay
 @onready var how_to_back_button: Button = $StartMenu/HowToOverlay/Panel/BackButton
 @onready var settings_overlay: ColorRect = $StartMenu/SettingsOverlay
@@ -188,6 +190,7 @@ func _ready() -> void:
 	play_button.pressed.connect(_start_game_from_menu)
 	how_to_button.pressed.connect(_show_how_to)
 	settings_button.pressed.connect(_show_settings)
+	update_button.pressed.connect(_open_android_update)
 	how_to_back_button.pressed.connect(_close_menu_panel)
 	settings_back_button.pressed.connect(_close_menu_panel)
 	motion_button.pressed.connect(_toggle_reduced_motion)
@@ -350,6 +353,12 @@ func _show_how_to() -> void:
 func _show_settings() -> void:
 	settings_overlay.visible = true
 	how_to_overlay.visible = false
+
+
+func _open_android_update() -> void:
+	var error := OS.shell_open(ANDROID_UPDATE_URL)
+	if error != OK:
+		push_warning("Update-Seite konnte nicht geöffnet werden: %s" % error_string(error))
 
 
 func _close_menu_panel() -> void:

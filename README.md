@@ -16,7 +16,7 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Three visual insect tiers: fly, moth, and bee
 - Food, experience, multi-stage hunt levels, and three random upgrade choices
 - Illustrated Web-Deck level-up cards with staggered reveal and press feedback
-- Data-driven database with 16 upgrades, rarity, levels, prerequisites, and four builds
+- Data-driven database with 24 upgrades, rarity, levels, prerequisites, and four builds
 - Fortress, trap, hunter, and silk-economy synergies with real gameplay effects
 - Limited silk resource with distance-based thread costs and capture recovery
 - Permanent silk and XP progress bars with slower level pacing
@@ -38,6 +38,17 @@ AI asset prompts and processing notes are recorded in
 
 Mouse clicks emulate taps on desktop. For Android, install Godot's Android export
 template and configure an Android SDK/JDK in the editor before exporting.
+
+## Android test channel
+
+The current installable APK is published as a GitHub Release:
+
+`https://github.com/mariogottling-glitch/spinnen-game/releases/latest/download/web-weaver-android.apk`
+
+The `UPDATE` button in the main menu opens this stable latest-download URL. Android
+then asks the player to confirm the downloaded APK update. Every published test
+build must keep the package ID `com.mariogottling.webweaver`, use a higher version
+code, and be signed with the same keystore so Android recognizes it as an update.
 
 During desktop development, press `U` to open the upgrade selection immediately.
 Press `B` to summon the current level's boss moth immediately for testing.
