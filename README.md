@@ -13,7 +13,7 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Four-frame leg animation while crawling, paced by movement speed
 - Four-stage jump animation with arc, airborne shadow, squash, and landing bounce
 - Flying insects with thread intersection and capture logic
-- Three visual insect tiers: fly, moth, and bee
+- Nine distinct illustrated creature sprites, from gnats and moths to specialist prey and bosses
 - Food, experience, multi-stage hunt levels, and three random upgrade choices
 - Illustrated Web-Deck level-up cards with staggered reveal and press feedback
 - Data-driven database with 29 upgrades, rarity, levels, prerequisites, and five builds
@@ -23,12 +23,13 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Permanent silk and XP progress bars with slower level pacing
 - Thread health, aging, wind damage, and global web integrity
 - Textured multi-fiber silk, reinforced braids, sticky dew strands, and illustrated web knots
-- Food objectives followed by a multi-hit wasp miniboss with an active timing-based bite duel
+- Food objectives followed by a rotating three-boss cycle with an active timing-based bite duel
 - Living Web geometry: triangular capture pockets and self-repairing four-way silk hearts
 - Telegraph flight corridors that reveal approach direction before valuable prey enters
 - Player-triggered web pluck with escalating vibration, better prey, combos, and extra thread strain
 - Three-of-six hunt contracts before every level, each changing risk, tempo, rewards, and prey mix
 - Armored beetles, multi-pass dragonflies, and calming fireflies with distinct counterplay
+- Unique production art for beetle, dragonfly, firefly, Wasp Queen, Titan Beetle, and Razor Hornet
 - Increasing hunt targets while the web and chosen build persist between levels
 - Run restart after complete web collapse
 - AI-generated forest, spider, insects, and spider animation sheets based on `design.md`
@@ -59,7 +60,7 @@ build must keep the package ID `com.mariogottling.webweaver`, use a higher versi
 code, and be signed with the same keystore so Android recognizes it as an update.
 
 During desktop development, press `U` to open the upgrade selection immediately.
-Press `B` to summon the current level's wasp miniboss immediately for testing.
+Press `B` to summon the current level's rotating miniboss immediately for testing.
 
 ## Next vertical-slice milestones
 

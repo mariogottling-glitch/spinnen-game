@@ -110,3 +110,29 @@ silk rosette with a warm honey center for junctions and endpoints.
 The source images used flat green or magenta chroma backgrounds. They were
 converted locally with soft matte and despill, cropped to their visible alpha
 bounds, and resized to mobile-friendly 1024 x 64 strips and a 128 x 128 knot.
+
+## Specialist prey and rotating bosses
+
+The following six production sprites were generated with the built-in Imagegen
+tool in `stylized-concept` mode. Every prompt requested one centered creature in
+a strict top-down orthographic view, a premium hand-painted 2.5D whimsical forest
+mobile-game finish, a strong readable silhouette, generous padding, and no text,
+frame, ground, shadow, environment, or watermark. Sources used a perfectly flat
+magenta chroma background and were converted locally to RGBA with the imagegen
+skill's soft-matte and despill workflow.
+
+- `sprites/beetle-v1.png`: compact violet-black armored rhinoceros beetle with a
+  short horn and warm amber-gold carapace edges.
+- `sprites/dragonfly-v1.png`: long turquoise dragonfly with four pale-cyan wings
+  and fine golden veins, designed for a fast horizontal silhouette.
+- `sprites/firefly-v1.png`: emerald firefly with cream wings and a bounded warm
+  amber luminous abdomen that stays readable at small size.
+- `sprites/boss-wasp-queen-v1.png`: broad black-and-molten-gold queen with a
+  natural chitin crown silhouette and four powerful amber wings.
+- `sprites/boss-titan-beetle-v1.png`: colossal moss-and-obsidian beetle with a
+  huge forked horn and fiery copper fracture lines.
+- `sprites/boss-razor-hornet-v1.png`: narrow burnt-orange and charcoal hornet
+  with smoky swept wings and blade-like attack anatomy.
+
+The gameplay renderer consumes the final alpha PNGs directly; no colorized reuse
+of the fly or bee textures remains for these six creatures.

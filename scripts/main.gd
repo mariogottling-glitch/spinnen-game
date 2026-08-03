@@ -19,6 +19,12 @@ const MOTH_TEXTURE: Texture2D = preload("res://assets/sprites/moth-v2.png")
 const FLY_TEXTURE: Texture2D = preload("res://assets/sprites/fly-v1.png")
 const BEE_TEXTURE: Texture2D = preload("res://assets/sprites/bee-v1.png")
 const WASP_TEXTURE: Texture2D = preload("res://assets/sprites/wasp-miniboss-v1.png")
+const BEETLE_TEXTURE: Texture2D = preload("res://assets/sprites/beetle-v1.png")
+const DRAGONFLY_TEXTURE: Texture2D = preload("res://assets/sprites/dragonfly-v1.png")
+const FIREFLY_TEXTURE: Texture2D = preload("res://assets/sprites/firefly-v1.png")
+const WASP_QUEEN_TEXTURE: Texture2D = preload("res://assets/sprites/boss-wasp-queen-v1.png")
+const TITAN_BEETLE_TEXTURE: Texture2D = preload("res://assets/sprites/boss-titan-beetle-v1.png")
+const RAZOR_HORNET_TEXTURE: Texture2D = preload("res://assets/sprites/boss-razor-hornet-v1.png")
 const THREAD_NATURAL_TEXTURE: Texture2D = preload("res://assets/web/thread-natural-v1.png")
 const THREAD_REINFORCED_TEXTURE: Texture2D = preload("res://assets/web/thread-reinforced-v1.png")
 const THREAD_STICKY_TEXTURE: Texture2D = preload("res://assets/web/thread-sticky-v1.png")
@@ -1280,31 +1286,47 @@ func _spawn_wasp_miniboss() -> void:
 		return
 	boss_active = true
 	flight_warnings.clear()
+	var boss_cycle := ["wasp_queen", "titan_beetle", "razor_hornet"]
+	var boss_kind: String = boss_cycle[(hunt_level - 1) % boss_cycle.size()]
+	var boss_stats: Dictionary = {
+		"wasp_queen": {"speed": 158.0, "radius": 32.0, "value": 16, "strength": 82.0, "escape": 4.2, "struggle": 25.0, "hits": 4},
+		"titan_beetle": {"speed": 108.0, "radius": 38.0, "value": 20, "strength": 115.0, "escape": 5.1, "struggle": 38.0, "hits": 5},
+		"razor_hornet": {"speed": 232.0, "radius": 29.0, "value": 18, "strength": 70.0, "escape": 2.8, "struggle": 22.0, "hits": 4}
+	}[boss_kind]
 	var from_left := randf() < 0.5
 	var direction := 1.0 if from_left else -1.0
 	insects.append({
 		"id": next_insect_id,
-		"kind": "wasp",
+		"kind": boss_kind,
 		"position": Vector2(-90.0 if from_left else 1170.0, randf_range(520.0, 1260.0)),
-		"velocity": Vector2((158.0 + float(hunt_level - 1) * 8.0) * direction, randf_range(-28.0, 28.0)),
-		"radius": 30.0,
-		"value": 14,
+		"velocity": Vector2((float(boss_stats["speed"]) + float(hunt_level - 1) * 8.0) * direction, randf_range(-28.0, 28.0)),
+		"radius": boss_stats["radius"],
+		"value": boss_stats["value"],
 		"caught": false,
 		"edge": -1,
 		"timer": 0.0,
 		"phase": randf() * TAU,
-		"required_strength": 78.0 + float(hunt_level - 1) * 7.0,
-		"escape_time": 4.2,
-		"struggle_damage": 24.0 + float(hunt_level - 1) * 2.5,
+		"required_strength": float(boss_stats["strength"]) + float(hunt_level - 1) * 7.0,
+		"escape_time": boss_stats["escape"],
+		"struggle_damage": float(boss_stats["struggle"]) + float(hunt_level - 1) * 2.5,
 		"auto_collect": false,
 		"boss": true,
-		"boss_hits": 3 + floori(float(hunt_level - 1) * 0.5),
+		"boss_hits": int(boss_stats["hits"]) + floori(float(hunt_level - 1) * 0.34),
 		"glyph_capture": false,
 		"ignored_edges": {}
 	})
 	next_insect_id += 1
-	status_label.text = "ACHTUNG – WESPEN-MINIBOSS IM ANFLUG!"
+	status_label.text = "ACHTUNG – %s IM ANFLUG!" % _boss_display_name(boss_kind)
 	hint_label.text = "FANGEN · ANSPRINGEN · IM GOLDENEN FENSTER BEISSEN"
+
+
+func _boss_display_name(kind: String) -> String:
+	return {
+		"wasp": "WESPE",
+		"wasp_queen": "WESPENKÖNIGIN",
+		"titan_beetle": "TITAN-KÄFER",
+		"razor_hornet": "KLINGENHORNISSE"
+	}.get(kind, "MINIBOSS")
 
 
 func _update_insects(delta: float) -> void:
@@ -1345,7 +1367,7 @@ func _update_insects(delta: float) -> void:
 			var capture_glyph := _triangle_glyph_at(position)
 			if not capture_glyph.is_empty():
 				effective_requirement *= 0.78
-			if insect["kind"] == "beetle" and capture_glyph.is_empty() and strong_silk_level <= 0:
+			if insect["kind"] in ["beetle", "titan_beetle"] and capture_glyph.is_empty() and strong_silk_level <= 0:
 				effective_requirement *= 1.35
 			if edge_health[caught_edge] + 0.01 >= effective_requirement:
 				insect["caught"] = true
@@ -1359,7 +1381,7 @@ func _update_insects(delta: float) -> void:
 				capture_flashes.append({"position": position, "life": 0.55})
 				vibration = minf(100.0, vibration + 2.0 + float(insect["value"]) * 0.5)
 				if insect["boss"]:
-					status_label.text = "WESPE FEST – JETZT ANSPRINGEN!"
+					status_label.text = "%s FEST – JETZT ANSPRINGEN!" % _boss_display_name(String(insect["kind"]))
 				elif insect["glyph_capture"]:
 					status_label.text = "FANGTASCHE SCHNAPPT ZU – KOMBO MÖGLICH!"
 				else:
@@ -1367,19 +1389,20 @@ func _update_insects(delta: float) -> void:
 				hint_label.text = "DANACH IM GOLDENEN BISSFENSTER TIPPEN" if insect["boss"] else "DER RING ZEIGT DIE VERBLEIBENDE FLUCHTZEIT"
 			else:
 				insect["ignored_edges"][caught_edge] = true
-				var break_force := 0.62 if insect["kind"] == "beetle" else 0.42
+				var break_force := 0.68 if insect["kind"] in ["beetle", "titan_beetle"] else 0.42
 				edge_health[caught_edge] = maxf(0.0, edge_health[caught_edge] - effective_requirement * break_force * contract_damage_multiplier)
 				insect["velocity"].y += randf_range(-85.0, 85.0)
-				status_label.text = "PANZERKÄFER BRICHT DURCH – FANGTASCHE ODER STARKE SEIDE!" if insect["kind"] == "beetle" else "ZU SCHWACH - BEUTE BRICHT DURCH"
+				status_label.text = "PANZERKÄFER BRICHT DURCH – FANGTASCHE ODER STARKE SEIDE!" if insect["kind"] in ["beetle", "titan_beetle"] else "ZU SCHWACH - BEUTE BRICHT DURCH"
 		elif position.x < -90.0 or position.x > 1170.0 or position.y < 180.0 or position.y > 1700.0:
 			if insect["boss"]:
-				_damage_thread_by_wasp()
+				_damage_thread_by_wasp(String(insect["kind"]))
 				var from_left := randf() < 0.5
 				var direction := 1.0 if from_left else -1.0
 				insect["position"] = Vector2(-90.0 if from_left else 1170.0, randf_range(480.0, 1320.0))
-				insect["velocity"] = Vector2((168.0 + float(hunt_level - 1) * 8.0) * direction, randf_range(-34.0, 34.0))
+				var pass_speed := maxf(105.0, absf(float(velocity.x)) * 1.04)
+				insect["velocity"] = Vector2(pass_speed * direction, randf_range(-34.0, 34.0))
 				insect["ignored_edges"] = {}
-				status_label.text = "WESPEN-STURMFLUG – EIN FADEN WURDE GETROFFEN!"
+				status_label.text = "%s GREIFT ERNEUT AN!" % _boss_display_name(String(insect["kind"]))
 			elif insect["kind"] == "dragonfly" and int(insect.get("passes_left", 0)) > 0:
 				insect["passes_left"] = int(insect["passes_left"]) - 1
 				var reenter_left := position.x > 540.0
@@ -1496,7 +1519,7 @@ func _resolve_bite_timing() -> void:
 	var captured_phase: float = insect["phase"]
 	var timing_distance := absf(bite_progress - bite_target_center)
 	var damage := 0
-	var result_message := "BISS VERPASST – DIE WESPE ZERREISST DEN FADEN!"
+	var result_message := "BISS VERPASST – DER MINIBOSS ZERREISST DEN FADEN!"
 	if timing_distance <= BITE_PERFECT_WINDOW * 0.5:
 		damage = boss_damage + 1
 		xp += 2
@@ -1512,7 +1535,7 @@ func _resolve_bite_timing() -> void:
 		insect["boss_hits"] = maxi(0, int(insect["boss_hits"]) - damage)
 	if int(insect["boss_hits"]) <= 0:
 		_collect_insect(insect_index)
-		status_label.text = "WESPEN-MINIBOSS BEZWUNGEN!"
+		status_label.text = "%s BEZWUNGEN!" % _boss_display_name(String(insect["kind"]))
 	else:
 		result_message += " NOCH %d" % int(insect["boss_hits"])
 		_escape_insect(insect_index, result_message)
@@ -1536,17 +1559,22 @@ func _resume_spider_after_capture(captured_edge: int, captured_phase: float) -> 
 		_start_auto_travel()
 
 
-func _damage_thread_by_wasp() -> void:
+func _damage_thread_by_wasp(boss_kind: String = "wasp") -> void:
 	var candidates: Array[int] = []
 	for i in range(edge_health.size()):
 		if edge_health[i] > 0.0:
 			candidates.append(i)
 	if candidates.is_empty():
 		return
-	var edge_index := candidates[randi() % candidates.size()]
-	edge_health[edge_index] = maxf(0.0, edge_health[edge_index] - 12.0 - float(hunt_level - 1) * 2.0)
-	var edge := edges[edge_index]
-	capture_flashes.append({"position": anchors[edge.x].lerp(anchors[edge.y], 0.5), "life": 0.8})
+	var strike_count := 2 if boss_kind == "titan_beetle" else 1
+	var strike_damage := 20.0 if boss_kind == "razor_hornet" else 12.0
+	for strike in range(mini(strike_count, candidates.size())):
+		var candidate_index := randi() % candidates.size()
+		var edge_index := candidates[candidate_index]
+		candidates.remove_at(candidate_index)
+		edge_health[edge_index] = maxf(0.0, edge_health[edge_index] - strike_damage - float(hunt_level - 1) * 2.0)
+		var edge := edges[edge_index]
+		capture_flashes.append({"position": anchors[edge.x].lerp(anchors[edge.y], 0.5), "life": 0.8})
 
 
 func _insect_index_by_id(insect_id: int) -> int:
@@ -1688,7 +1716,7 @@ func _complete_hunt_level() -> void:
 	level_complete_overlay.visible = true
 	level_complete_title.text = "LEVEL %d GESCHAFFT" % hunt_level
 	var contract_name := String(current_contract.get("title", "NORMALE JAGD"))
-	level_complete_detail.text = "%d Nahrung gesammelt\n%s erfüllt · Wespe besiegt\n\nTIPPE FÜR LEVEL %d" % [hunt_food, contract_name, hunt_level + 1]
+	level_complete_detail.text = "%d Nahrung gesammelt\n%s erfüllt · Miniboss besiegt\n\nTIPPE FÜR LEVEL %d" % [hunt_food, contract_name, hunt_level + 1]
 	status_label.text = "JAGDAUFTRAG ERFÜLLT"
 	hint_label.text = "TIPPE, UM WEITERZUSPIELEN"
 
@@ -1706,7 +1734,7 @@ func _start_next_hunt_level() -> void:
 	vibration = maxf(0.0, vibration - 25.0)
 	lure_cooldown = 2.0
 	status_label.text = "LEVEL %d - NEUER JAGDAUFTRAG" % hunt_level
-	hint_label.text = "SAMMLE NAHRUNG UND LOCKE DEN WESPEN-MINIBOSS AN"
+	hint_label.text = "SAMMLE NAHRUNG UND LOCKE DEN NÄCHSTEN MINIBOSS AN"
 	_update_hud()
 	_open_contract_selection()
 
@@ -2008,7 +2036,12 @@ func _update_hud() -> void:
 	lure_button.disabled = lure_cooldown > 0.0 or upgrade_open
 	lure_button.text = "ZUPFEN %.0f s" % ceilf(lure_cooldown) if lure_cooldown > 0.0 else "NETZ ZUPFEN"
 	if boss_active:
-		hunt_goal_label.text = "LEVEL %d · WESPEN-MINIBOSS" % hunt_level
+		var active_boss_name := "MINIBOSS"
+		for insect in insects:
+			if insect["boss"]:
+				active_boss_name = _boss_display_name(String(insect["kind"]))
+				break
+		hunt_goal_label.text = "LEVEL %d · %s" % [hunt_level, active_boss_name]
 	else:
 		hunt_goal_label.text = "JAGDZIEL L%d  ·  NAHRUNG %d/%d" % [hunt_level, hunt_food, hunt_goal]
 	build_label.text = _build_summary_text()
@@ -2186,34 +2219,37 @@ func _draw_insects() -> void:
 			texture = BEE_TEXTURE
 			scale = 0.062
 		elif kind == "beetle":
-			texture = BEE_TEXTURE
-			scale = 0.068
-			insect_tint = Color(0.66, 0.48, 0.86, 1.0) if not insect["caught"] else Color(0.9, 0.64, 0.5, 1.0)
+			texture = BEETLE_TEXTURE
+			scale = 0.062
+			insect_tint = Color.WHITE if not insect["caught"] else Color(0.9, 0.64, 0.5, 1.0)
 			var shell_pulse := 1.0 + sin(elapsed_time * 4.0 + float(insect["phase"])) * 0.04
 			draw_circle(position, 39.0 * shell_pulse, Color(BERRY, 0.2))
-			draw_arc(position, 40.0 * shell_pulse, -2.5, -0.64, 22, Color(CREAM, 0.7), 4.0, true)
 		elif kind == "dragonfly":
-			texture = BEE_TEXTURE
-			scale = 0.052
-			insect_tint = Color(0.55, 0.9, 1.0, 1.0) if not insect["caught"] else Color(0.8, 0.76, 0.67, 1.0)
-			var wing_axis := Vector2.from_angle(rotation - PI * 0.5)
-			var wing_side := wing_axis.orthogonal()
-			draw_line(position - wing_axis * 4.0, position + wing_side * 42.0 - wing_axis * 20.0, Color(SKY, 0.5), 10.0, true)
-			draw_line(position - wing_axis * 4.0, position - wing_side * 42.0 - wing_axis * 20.0, Color(SKY, 0.5), 10.0, true)
-			draw_line(position + wing_axis * 8.0, position + wing_side * 34.0 + wing_axis * 28.0, Color(CREAM, 0.36), 8.0, true)
-			draw_line(position + wing_axis * 8.0, position - wing_side * 34.0 + wing_axis * 28.0, Color(CREAM, 0.36), 8.0, true)
+			texture = DRAGONFLY_TEXTURE
+			scale = 0.058
+			insect_tint = Color.WHITE if not insect["caught"] else Color(0.8, 0.76, 0.67, 1.0)
 		elif kind == "firefly":
-			texture = FLY_TEXTURE
-			scale = 0.043
-			insect_tint = Color(1.0, 0.88, 0.36, 1.0)
+			texture = FIREFLY_TEXTURE
+			scale = 0.052
+			insect_tint = Color.WHITE if not insect["caught"] else Color(1.0, 0.78, 0.52, 1.0)
 			var glow := 0.5 + sin(elapsed_time * 7.0 + float(insect["phase"])) * 0.5
 			draw_circle(position, 55.0 + glow * 14.0, Color(HONEY, 0.08 + glow * 0.08))
 			draw_circle(position, 18.0 + glow * 4.0, Color(HONEY, 0.34 + glow * 0.25))
-		elif kind == "wasp":
+		elif kind in ["wasp", "wasp_queen", "titan_beetle", "razor_hornet"]:
 			texture = WASP_TEXTURE
 			scale = 0.105
+			if kind == "wasp_queen":
+				texture = WASP_QUEEN_TEXTURE
+				scale = 0.094
+			elif kind == "titan_beetle":
+				texture = TITAN_BEETLE_TEXTURE
+				scale = 0.092
+			elif kind == "razor_hornet":
+				texture = RAZOR_HORNET_TEXTURE
+				scale = 0.098
 		if insect["boss"]:
-			scale = 0.12 if kind == "wasp" else 0.125
+			if kind == "wasp":
+				scale = 0.12
 			if not is_bite_target:
 				var boss_pulse := 1.0 + sin(elapsed_time * 5.0) * 0.06
 				var trail_direction := -velocity.normalized()

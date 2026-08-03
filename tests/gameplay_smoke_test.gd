@@ -23,6 +23,12 @@ func _run() -> void:
 	assert(game.THREAD_REINFORCED_TEXTURE != null)
 	assert(game.THREAD_STICKY_TEXTURE != null)
 	assert(game.THREAD_KNOT_TEXTURE != null)
+	assert(game.BEETLE_TEXTURE != null)
+	assert(game.DRAGONFLY_TEXTURE != null)
+	assert(game.FIREFLY_TEXTURE != null)
+	assert(game.WASP_QUEEN_TEXTURE != null)
+	assert(game.TITAN_BEETLE_TEXTURE != null)
+	assert(game.RAZOR_HORNET_TEXTURE != null)
 
 	assert(game.menu_open)
 	assert(game.start_menu.visible)
@@ -177,11 +183,22 @@ func _run() -> void:
 
 	game.upgrade_open = false
 	game.upgrade_overlay.visible = false
+	game.hunt_level = 2
+	game._spawn_boss_moth()
+	assert(game.insects[0]["kind"] == "titan_beetle")
+	game.insects.clear()
+	game.boss_active = false
+	game.hunt_level = 3
+	game._spawn_boss_moth()
+	assert(game.insects[0]["kind"] == "razor_hornet")
+	game.insects.clear()
+	game.boss_active = false
+	game.hunt_level = 1
 	game._spawn_boss_moth()
 	assert(game.boss_active)
 	assert(game.insects.size() == 1)
 	assert(game.insects[0]["boss"])
-	assert(game.insects[0]["kind"] == "wasp")
+	assert(game.insects[0]["kind"] == "wasp_queen")
 	game.insects[0]["caught"] = true
 	game.insects[0]["edge"] = 0
 	game.insects[0]["phase"] = 0.5

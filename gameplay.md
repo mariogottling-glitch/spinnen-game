@@ -450,15 +450,20 @@ Der Boss verändert die Umwelt.
 
 Jedes Level ist ein Jagdauftrag ohne harte Zeitbegrenzung. Zuerst muss eine
 sichtbare Nahrungsvorgabe erfüllt werden. Danach pausiert das normale Spawning
-und ein Wespen-Miniboss erscheint.
+und einer von drei rotierenden Minibossen erscheint.
 
-- Die Wespe benötigt mehrere aktive Fänge und erfolgreiche Bisse.
+- Jeder Boss benötigt mehrere aktive Fänge und erfolgreiche Bisse.
 - Nach dem Anspringen läuft ein kurzer Timingzeiger über einen Ring.
 - Ein Treffer im goldenen Fenster verursacht zusätzlichen Schaden und gibt XP sowie Seide.
-- Ein verpasster Biss beschädigt den Fangfaden; zwischen den Fängen greift die Wespe weitere Fäden im Sturzflug an.
+- Ein verpasster Biss beschädigt den Fangfaden; zwischen den Fängen greift der Boss weitere Fäden an.
 - Jeder Befreiungsversuch belastet das Netz stark.
 - Verpasst der Spieler sie, fliegt sie erneut an und verhindert keinen Fortschritt.
 - Der seltene Giftbiss reduziert die benötigten Angriffe.
+- **Wespenkönigin:** ausgewogener Auftaktboss mit vier Bisspunkten.
+- **Titan-Käfer:** besonders schwer; benötigt eine Fangtasche oder starke Seide
+  und trifft bei einem Durchbruch zwei Fäden.
+- **Klingenhornisse:** schneller Mehrfachangreifer mit kurzer Fangzeit und
+  besonders starkem Schaden bei verpassten Flugbahnen.
 - Nach dem Fang erscheint der Levelabschluss; der bestehende Build und das Netz
   werden in das nächste, schwierigere Jagdlevel übernommen.
 
