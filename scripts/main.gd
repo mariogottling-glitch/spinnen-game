@@ -55,6 +55,50 @@ const UPGRADE_ICON_TEXTURES := {
 	"spider_queen": preload("res://assets/ui/perks/spider-queen.png")
 }
 const UpgradeDB = preload("res://scripts/upgrade_database.gd")
+const HUNT_CONTRACTS: Array[Dictionary] = [
+	{
+		"id": "glass_hunt", "title": "GLÄSERNE JAGD", "sigil": "◆",
+		"risk": "Fäden erleiden +35 % Schaden", "reward": "+50 % Nahrung · +10 % XP",
+		"special": "KÄFER", "preferred": "beetle", "spawn": 0.95, "damage": 1.35,
+		"food": 1.5, "xp": 1.1, "silk": 1.0, "special_chance": 0.22, "rare": 0.03,
+		"escape": 1.0, "speed": 1.0, "goal": 1.0, "vibration_floor": 0.0
+	},
+	{
+		"id": "storm_lane", "title": "STURMKORRIDOR", "sigil": "✦",
+		"risk": "Anflüge sind 18 % schneller", "reward": "+45 % XP",
+		"special": "LIBELLE", "preferred": "dragonfly", "spawn": 0.72, "damage": 1.1,
+		"food": 1.12, "xp": 1.45, "silk": 1.0, "special_chance": 0.25, "rare": 0.02,
+		"escape": 1.0, "speed": 1.18, "goal": 1.0, "vibration_floor": 0.0
+	},
+	{
+		"id": "night_glow", "title": "NACHTLEUCHTEN", "sigil": "●",
+		"risk": "Beute entkommt 18 % früher", "reward": "+45 % Seide · +15 % Nahrung",
+		"special": "GLÜHWÜRMCHEN", "preferred": "firefly", "spawn": 0.9, "damage": 1.0,
+		"food": 1.15, "xp": 1.0, "silk": 1.45, "special_chance": 0.27, "rare": 0.01,
+		"escape": 0.82, "speed": 1.0, "goal": 1.0, "vibration_floor": 0.0
+	},
+	{
+		"id": "silk_famine", "title": "SEIDENHUNGER", "sigil": "◇",
+		"risk": "Neue Fäden kosten 25 % mehr", "reward": "+65 % Nahrung",
+		"special": "KÄFER", "preferred": "beetle", "spawn": 0.88, "damage": 1.05,
+		"food": 1.65, "xp": 1.0, "silk": 1.0, "special_chance": 0.18, "rare": 0.04,
+		"escape": 1.0, "speed": 1.0, "goal": 1.0, "vibration_floor": 0.0, "thread_cost": 1.25
+	},
+	{
+		"id": "echo_web", "title": "ECHO-NETZ", "sigil": "≈",
+		"risk": "Vibration bleibt mindestens bei 30 %", "reward": "+35 % Nahrung · +25 % XP",
+		"special": "LIBELLE", "preferred": "dragonfly", "spawn": 0.8, "damage": 1.18,
+		"food": 1.35, "xp": 1.25, "silk": 1.0, "special_chance": 0.2, "rare": 0.04,
+		"escape": 1.0, "speed": 1.08, "goal": 1.0, "vibration_floor": 30.0
+	},
+	{
+		"id": "golden_calm", "title": "GOLDENE RUHE", "sigil": "✺",
+		"risk": "Das Jagdziel ist 30 % höher", "reward": "Weniger Netzschaden · seltene Beute",
+		"special": "GLÜHWÜRMCHEN", "preferred": "firefly", "spawn": 1.05, "damage": 0.82,
+		"food": 1.25, "xp": 1.15, "silk": 1.25, "special_chance": 0.24, "rare": 0.07,
+		"escape": 1.1, "speed": 0.95, "goal": 1.3, "vibration_floor": 0.0
+	}
+]
 
 const PLAY_RECT := Rect2(70.0, 230.0, 940.0, 1390.0)
 const JUMP_DURATION := 0.46
@@ -149,6 +193,21 @@ var glyph_refresh_timer := 0.0
 var glyph_effect_timer := 0.0
 var glyph_combo := 0
 var glyph_combo_timer := 0.0
+var contract_open := false
+var offered_contracts: Array[Dictionary] = []
+var current_contract: Dictionary = {}
+var contract_spawn_multiplier := 1.0
+var contract_damage_multiplier := 1.0
+var contract_food_multiplier := 1.0
+var contract_xp_multiplier := 1.0
+var contract_silk_multiplier := 1.0
+var contract_escape_multiplier := 1.0
+var contract_speed_multiplier := 1.0
+var contract_special_chance := 0.06
+var contract_preferred_special := ""
+var contract_vibration_floor := 0.0
+var contract_thread_cost_multiplier := 1.0
+var contract_rare_bonus := 0.0
 
 var preview_cursor := 0
 var preview_anchor := -1
@@ -200,10 +259,16 @@ var menu_transitioning := false
 @onready var vibration_label: Label = $HUD/VibrationLabel
 @onready var vibration_bar: ProgressBar = $HUD/VibrationBar
 @onready var glyph_label: Label = $HUD/GlyphSummary
+@onready var contract_label: Label = $HUD/ContractSummary
 @onready var lure_button: Button = $HUD/LureButton
 @onready var level_complete_overlay: ColorRect = $HUD/LevelCompleteOverlay
 @onready var level_complete_title: Label = $HUD/LevelCompleteOverlay/Title
 @onready var level_complete_detail: Label = $HUD/LevelCompleteOverlay/Detail
+@onready var contract_overlay: ColorRect = $HUD/ContractOverlay
+@onready var contract_level_caption: Label = $HUD/ContractOverlay/LevelCaption
+@onready var contract_one: Button = $HUD/ContractOverlay/ContractOne
+@onready var contract_two: Button = $HUD/ContractOverlay/ContractTwo
+@onready var contract_three: Button = $HUD/ContractOverlay/ContractThree
 @onready var menu_button: Button = $HUD/MenuButton
 @onready var start_menu: CanvasLayer = $StartMenu
 @onready var menu_card: Panel = $StartMenu/MenuCard
@@ -235,6 +300,9 @@ func _ready() -> void:
 	motion_button.pressed.connect(_toggle_reduced_motion)
 	reset_button.pressed.connect(_prepare_new_run)
 	lure_button.button_down.connect(_pluck_web)
+	contract_one.button_down.connect(_choose_contract.bind(0))
+	contract_two.button_down.connect(_choose_contract.bind(1))
+	contract_three.button_down.connect(_choose_contract.bind(2))
 	_reset_run()
 	_show_main_menu(true)
 
@@ -243,7 +311,7 @@ func _process(delta: float) -> void:
 	if menu_open:
 		queue_redraw()
 		return
-	if game_over or upgrade_open or level_complete:
+	if game_over or upgrade_open or contract_open or level_complete:
 		queue_redraw()
 		return
 
@@ -252,7 +320,7 @@ func _process(delta: float) -> void:
 	insect_timer += delta
 	wind_timer += delta
 	lure_cooldown = maxf(0.0, lure_cooldown - delta)
-	vibration = maxf(0.0, vibration - delta * (2.2 if flight_warnings.is_empty() else 1.35))
+	vibration = maxf(contract_vibration_floor, vibration - delta * (2.2 if flight_warnings.is_empty() else 1.35))
 	glyph_refresh_timer -= delta
 	if glyph_refresh_timer <= 0.0:
 		glyph_refresh_timer = GLYPH_REFRESH_INTERVAL
@@ -292,6 +360,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_main_menu()
 		return
 	if menu_open:
+		return
+	if contract_open:
 		return
 	if event is InputEventKey and event.pressed and event.keycode == KEY_U:
 		if not game_over and not upgrade_open:
@@ -382,6 +452,8 @@ func _start_game_from_menu() -> void:
 	menu_card.modulate = Color.WHITE
 	menu_hero.modulate = Color.WHITE
 	menu_title.modulate = Color.WHITE
+	if current_contract.is_empty() and not contract_open:
+		_open_contract_selection()
 
 
 func _show_how_to() -> void:
@@ -430,6 +502,8 @@ func _reset_run() -> void:
 	flight_warnings.clear()
 	web_glyphs.clear()
 	web_glyph_ids.clear()
+	offered_contracts.clear()
+	current_contract.clear()
 
 	var center := PLAY_RECT.get_center()
 	anchors = [
@@ -502,6 +576,8 @@ func _reset_run() -> void:
 	glyph_effect_timer = 0.0
 	glyph_combo = 0
 	glyph_combo_timer = 0.0
+	contract_open = false
+	_reset_contract_modifiers()
 
 	thread_strength = 100.0
 	capture_radius = 15.0
@@ -520,6 +596,7 @@ func _reset_run() -> void:
 	hunt_level = 1
 	hunt_food = 0
 	hunt_goal = 24
+	_reset_contract_modifiers()
 	boss_active = false
 	level_complete = false
 	elapsed_time = 0.0
@@ -527,6 +604,7 @@ func _reset_run() -> void:
 	insect_timer = 0.0
 	wind_timer = 0.0
 	lure_button.visible = false
+	contract_overlay.visible = false
 	preview_cursor = 11
 	_create_pollen()
 	upgrade_overlay.visible = false
@@ -921,8 +999,89 @@ func _pluck_web() -> void:
 	hint_label.text = "MEHR VIBRATION = BESSERE BEUTE, ABER MEHR GEFAHR"
 
 
+func _reset_contract_modifiers() -> void:
+	contract_spawn_multiplier = 1.0
+	contract_damage_multiplier = 1.0
+	contract_food_multiplier = 1.0
+	contract_xp_multiplier = 1.0
+	contract_silk_multiplier = 1.0
+	contract_escape_multiplier = 1.0
+	contract_speed_multiplier = 1.0
+	contract_special_chance = 0.06 + minf(0.08, float(hunt_level - 1) * 0.015)
+	contract_preferred_special = ""
+	contract_vibration_floor = 0.0
+	contract_thread_cost_multiplier = 1.0
+	contract_rare_bonus = 0.0
+
+
+func _open_contract_selection() -> void:
+	_reset_contract_modifiers()
+	current_contract.clear()
+	offered_contracts.clear()
+	var candidates: Array[Dictionary] = HUNT_CONTRACTS.duplicate()
+	while offered_contracts.size() < 3 and not candidates.is_empty():
+		var selected := randi() % candidates.size()
+		offered_contracts.append(candidates[selected])
+		candidates.remove_at(selected)
+	contract_open = true
+	contract_overlay.visible = true
+	contract_level_caption.text = "JAGDLEVEL %d" % hunt_level
+	var cards: Array[Button] = [contract_one, contract_two, contract_three]
+	for i in range(cards.size()):
+		_configure_contract_card(cards[i], offered_contracts[i])
+		cards[i].disabled = false
+		cards[i].scale = Vector2(0.84, 0.84)
+		cards[i].modulate = Color(1.0, 1.0, 1.0, 0.0)
+		var tween := create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(cards[i], "scale", Vector2.ONE, 0.3).set_delay(float(i) * 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(cards[i], "modulate", Color.WHITE, 0.18).set_delay(float(i) * 0.07)
+	status_label.text = "WÄHLE EINEN JAGDVERTRAG"
+	hint_label.text = "RISIKO UND BELOHNUNG GELTEN BIS ZUM MINIBOSS"
+
+
+func _configure_contract_card(card: Button, contract: Dictionary) -> void:
+	(card.get_node("Sigil") as Label).text = contract["sigil"]
+	var title := card.get_node("Title") as Label
+	title.text = contract["title"]
+	title.add_theme_font_size_override("font_size", 24 if String(contract["title"]).length() > 15 else 28)
+	(card.get_node("Risk") as Label).text = "RISIKO\n%s" % contract["risk"]
+	(card.get_node("Reward") as Label).text = "BELOHNUNG\n%s" % contract["reward"]
+	(card.get_node("Special") as Label).text = "SPEZIALTIER: %s" % contract["special"]
+
+
+func _choose_contract(choice: int) -> void:
+	if not contract_open or choice < 0 or choice >= offered_contracts.size():
+		return
+	var cards: Array[Button] = [contract_one, contract_two, contract_three]
+	for card in cards:
+		card.disabled = true
+	current_contract = offered_contracts[choice]
+	contract_spawn_multiplier = float(current_contract.get("spawn", 1.0))
+	contract_damage_multiplier = float(current_contract.get("damage", 1.0))
+	contract_food_multiplier = float(current_contract.get("food", 1.0))
+	contract_xp_multiplier = float(current_contract.get("xp", 1.0))
+	contract_silk_multiplier = float(current_contract.get("silk", 1.0))
+	contract_escape_multiplier = float(current_contract.get("escape", 1.0))
+	contract_speed_multiplier = float(current_contract.get("speed", 1.0))
+	contract_special_chance = float(current_contract.get("special_chance", 0.06))
+	contract_preferred_special = String(current_contract.get("preferred", ""))
+	contract_vibration_floor = float(current_contract.get("vibration_floor", 0.0))
+	contract_thread_cost_multiplier = float(current_contract.get("thread_cost", 1.0))
+	contract_rare_bonus = float(current_contract.get("rare", 0.0))
+	hunt_goal = maxi(hunt_food + 1, roundi(float(hunt_goal) * float(current_contract.get("goal", 1.0))))
+	vibration = maxf(vibration, contract_vibration_floor)
+	contract_open = false
+	contract_overlay.visible = false
+	status_label.text = "VERTRAG AKTIV: %s" % current_contract["title"]
+	hint_label.text = "%s · %s" % [current_contract["risk"], current_contract["reward"]]
+	_update_hud()
+	if xp >= xp_target and not upgrade_open:
+		_open_upgrade()
+
+
 func _thread_cost(a: Vector2, b: Vector2) -> float:
-	return clampf(10.0 + a.distance_to(b) / 30.0, 13.0, 38.0) * thread_cost_multiplier
+	return clampf(10.0 + a.distance_to(b) / 30.0, 13.0, 38.0) * thread_cost_multiplier * contract_thread_cost_multiplier
 
 
 func _add_architect_support(node: int, excluded: int) -> void:
@@ -957,8 +1116,15 @@ func _spawn_insect() -> void:
 
 
 func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
+	var special_chance := contract_special_chance + (0.1 if force_valuable else 0.0)
+	if randf() < special_chance:
+		var special_kind := contract_preferred_special
+		if special_kind.is_empty() or randf() > 0.72:
+			var special_kinds := ["beetle", "dragonfly", "firefly"]
+			special_kind = special_kinds[randi() % special_kinds.size()]
+		return _create_special_insect_spec(special_kind)
 	var risk_bonus := vibration * 0.0008
-	var roll := clampf(randf() + rare_spawn_bonus + risk_bonus, 0.0, 0.999)
+	var roll := clampf(randf() + rare_spawn_bonus + contract_rare_bonus + risk_bonus, 0.0, 0.999)
 	if force_valuable:
 		roll = maxf(roll, randf_range(0.58, 0.96))
 	var kind := "gnat"
@@ -998,7 +1164,7 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		auto_collect = false
 	var from_left := randf() < 0.5
 	var y := randf_range(340.0, 1530.0)
-	speed *= (1.0 + float(hunt_level - 1) * 0.07) * (1.0 + vibration * 0.0015)
+	speed *= (1.0 + float(hunt_level - 1) * 0.07) * (1.0 + vibration * 0.0015) * contract_speed_multiplier
 	return {
 		"kind": kind,
 		"value": value,
@@ -1010,8 +1176,39 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		"auto_collect": auto_collect,
 		"from_left": from_left,
 		"y": y,
-		"vertical_speed": randf_range(-14.0, 14.0)
+		"vertical_speed": randf_range(-14.0, 14.0),
+		"passes": 0,
+		"special": false
 	}
+
+
+func _create_special_insect_spec(kind: String) -> Dictionary:
+	var spec := {
+		"kind": kind,
+		"value": 6,
+		"radius": 14.0,
+		"speed": 170.0,
+		"required_strength": 42.0,
+		"escape_time": 3.0,
+		"struggle_damage": 10.0,
+		"auto_collect": false,
+		"passes": 0,
+		"special": true
+	}
+	match kind:
+		"beetle":
+			spec.merge({"value": 10, "radius": 23.0, "speed": 105.0, "required_strength": 118.0, "escape_time": 3.6, "struggle_damage": 34.0}, true)
+		"dragonfly":
+			spec.merge({"value": 7, "radius": 14.0, "speed": 315.0, "required_strength": 44.0, "escape_time": 1.9, "struggle_damage": 12.0, "passes": 2}, true)
+		"firefly":
+			spec.merge({"value": 5, "radius": 11.0, "speed": 128.0, "required_strength": 22.0, "escape_time": 5.0, "struggle_damage": 3.0}, true)
+	var from_left := randf() < 0.5
+	var speed_scale := (1.0 + float(hunt_level - 1) * 0.07) * (1.0 + vibration * 0.0015) * contract_speed_multiplier
+	spec["speed"] = float(spec["speed"]) * speed_scale
+	spec["from_left"] = from_left
+	spec["y"] = randf_range(360.0, 1510.0)
+	spec["vertical_speed"] = randf_range(-10.0, 10.0)
+	return spec
 
 
 func _spawn_insect_from_spec(spec: Dictionary) -> void:
@@ -1035,6 +1232,8 @@ func _spawn_insect_from_spec(spec: Dictionary) -> void:
 		"boss": false,
 		"boss_hits": 1,
 		"glyph_capture": false,
+		"special": bool(spec.get("special", false)),
+		"passes_left": int(spec.get("passes", 0)),
 		"ignored_edges": {}
 	})
 	next_insect_id += 1
@@ -1049,6 +1248,9 @@ func _queue_insect_warning(force_valuable: bool = false, extra_delay: float = 0.
 		"fly": warning_duration = 0.9
 		"moth": warning_duration = 1.08
 		"bee": warning_duration = 1.3
+		"beetle": warning_duration = 1.45
+		"dragonfly": warning_duration = 0.82
+		"firefly": warning_duration = 1.15
 	flight_warnings.append({
 		"spec": spec,
 		"timer": warning_duration + extra_delay,
@@ -1066,7 +1268,7 @@ func _update_flight_warnings(delta: float) -> void:
 
 
 func _current_spawn_interval() -> float:
-	return clampf(INSECT_SPAWN_INTERVAL + 0.2 - vibration * 0.006 - float(web_glyphs.size()) * 0.015, 0.72, 1.45)
+	return clampf((INSECT_SPAWN_INTERVAL + 0.2 - vibration * 0.006 - float(web_glyphs.size()) * 0.015) * contract_spawn_multiplier, 0.58, 1.55)
 
 
 func _spawn_boss_moth() -> void:
@@ -1121,13 +1323,13 @@ func _update_insects(delta: float) -> void:
 				var edge := edges[edge_index]
 				insect["position"] = anchors[edge.x].lerp(anchors[edge.y], insect["phase"])
 				var vibration_strain := 1.0 + vibration * 0.003
-				edge_health[edge_index] = maxf(0.0, edge_health[edge_index] - float(insect["struggle_damage"]) * struggle_damage_multiplier * vibration_strain * delta)
+				edge_health[edge_index] = maxf(0.0, edge_health[edge_index] - float(insect["struggle_damage"]) * struggle_damage_multiplier * vibration_strain * contract_damage_multiplier * delta)
 			if insect["auto_collect"] and float(insect["timer"]) >= 0.42:
 				status_label.text = "+1 XP - KLEINE MUECKE"
 				_collect_insect(i)
 			elif edge_index < 0 or edge_index >= edge_health.size() or edge_health[edge_index] <= 0.0:
 				_escape_insect(i, "FADEN GERISSEN")
-			elif float(insect["timer"]) >= float(insect["escape_time"]) * escape_time_multiplier:
+			elif float(insect["timer"]) >= float(insect["escape_time"]) * escape_time_multiplier * contract_escape_multiplier:
 				_escape_insect(i, "BEUTE ENTKOMMEN")
 			continue
 
@@ -1143,6 +1345,8 @@ func _update_insects(delta: float) -> void:
 			var capture_glyph := _triangle_glyph_at(position)
 			if not capture_glyph.is_empty():
 				effective_requirement *= 0.78
+			if insect["kind"] == "beetle" and capture_glyph.is_empty() and strong_silk_level <= 0:
+				effective_requirement *= 1.35
 			if edge_health[caught_edge] + 0.01 >= effective_requirement:
 				insect["caught"] = true
 				insect["edge"] = caught_edge
@@ -1163,9 +1367,10 @@ func _update_insects(delta: float) -> void:
 				hint_label.text = "DANACH IM GOLDENEN BISSFENSTER TIPPEN" if insect["boss"] else "DER RING ZEIGT DIE VERBLEIBENDE FLUCHTZEIT"
 			else:
 				insect["ignored_edges"][caught_edge] = true
-				edge_health[caught_edge] = maxf(0.0, edge_health[caught_edge] - effective_requirement * 0.42)
+				var break_force := 0.62 if insect["kind"] == "beetle" else 0.42
+				edge_health[caught_edge] = maxf(0.0, edge_health[caught_edge] - effective_requirement * break_force * contract_damage_multiplier)
 				insect["velocity"].y += randf_range(-85.0, 85.0)
-				status_label.text = "ZU SCHWACH - BEUTE BRICHT DURCH"
+				status_label.text = "PANZERKÄFER BRICHT DURCH – FANGTASCHE ODER STARKE SEIDE!" if insect["kind"] == "beetle" else "ZU SCHWACH - BEUTE BRICHT DURCH"
 		elif position.x < -90.0 or position.x > 1170.0 or position.y < 180.0 or position.y > 1700.0:
 			if insect["boss"]:
 				_damage_thread_by_wasp()
@@ -1175,6 +1380,14 @@ func _update_insects(delta: float) -> void:
 				insect["velocity"] = Vector2((168.0 + float(hunt_level - 1) * 8.0) * direction, randf_range(-34.0, 34.0))
 				insect["ignored_edges"] = {}
 				status_label.text = "WESPEN-STURMFLUG – EIN FADEN WURDE GETROFFEN!"
+			elif insect["kind"] == "dragonfly" and int(insect.get("passes_left", 0)) > 0:
+				insect["passes_left"] = int(insect["passes_left"]) - 1
+				var reenter_left := position.x > 540.0
+				var reenter_direction := 1.0 if reenter_left else -1.0
+				insect["position"] = Vector2(-55.0 if reenter_left else 1135.0, randf_range(360.0, 1510.0))
+				insect["velocity"] = Vector2(absf(float(insect["velocity"].x)) * reenter_direction, randf_range(-18.0, 18.0))
+				insect["ignored_edges"] = {}
+				status_label.text = "LIBELLE WENDET – NOCH %d ANFLÜGE" % (int(insect["passes_left"]) + 1)
 			else:
 				insects.remove_at(i)
 
@@ -1395,9 +1608,9 @@ func _collect_insect(index: int, allow_chain: bool = true) -> void:
 	var was_auto: bool = insect["auto_collect"]
 	var was_boss: bool = insect["boss"]
 	var was_glyph_capture: bool = insect.get("glyph_capture", false)
-	var reward_multiplier := food_multiplier
-	var xp_multiplier := 1.0
-	var local_silk_multiplier := silk_gain_multiplier
+	var reward_multiplier := food_multiplier * contract_food_multiplier
+	var xp_multiplier := contract_xp_multiplier
+	var local_silk_multiplier := silk_gain_multiplier * contract_silk_multiplier
 	if was_auto and gnat_reward_level > 0:
 		reward_multiplier *= 1.0 + float(gnat_reward_level)
 		local_silk_multiplier *= 1.0 + 0.5 * float(gnat_reward_level)
@@ -1423,6 +1636,17 @@ func _collect_insect(index: int, allow_chain: bool = true) -> void:
 	var silk_gain := (4.0 + float(value) * 2.0) * local_silk_multiplier
 	silk = minf(silk_max, silk + silk_gain)
 	vibration = minf(100.0, vibration + 1.5 + float(value) * 0.65)
+	match String(insect["kind"]):
+		"firefly":
+			vibration = maxf(contract_vibration_floor, vibration - 28.0)
+			silk = minf(silk_max, silk + 12.0 * contract_silk_multiplier)
+			status_label.text = "GLÜHWÜRMCHEN – NETZ BERUHIGT · +12 SEIDE"
+		"beetle":
+			_repair_weakest_thread(16.0)
+			status_label.text = "PANZERKÄFER – SCHWÄCHSTER FADEN VERSTÄRKT"
+		"dragonfly":
+			xp += 2
+			status_label.text = "LIBELLENFANG – +2 REAKTIONS-XP"
 	insects.remove_at(index)
 	if recycler_level > 0:
 		_repair_weakest_thread(8.0 + float(recycler_level) * 4.0)
@@ -1463,7 +1687,8 @@ func _complete_hunt_level() -> void:
 	lure_button.visible = false
 	level_complete_overlay.visible = true
 	level_complete_title.text = "LEVEL %d GESCHAFFT" % hunt_level
-	level_complete_detail.text = "%d Nahrung gesammelt\nWespen-Miniboss besiegt\n\nTIPPE FÜR LEVEL %d" % [hunt_food, hunt_level + 1]
+	var contract_name := String(current_contract.get("title", "NORMALE JAGD"))
+	level_complete_detail.text = "%d Nahrung gesammelt\n%s erfüllt · Wespe besiegt\n\nTIPPE FÜR LEVEL %d" % [hunt_food, contract_name, hunt_level + 1]
 	status_label.text = "JAGDAUFTRAG ERFÜLLT"
 	hint_label.text = "TIPPE, UM WEITERZUSPIELEN"
 
@@ -1483,8 +1708,7 @@ func _start_next_hunt_level() -> void:
 	status_label.text = "LEVEL %d - NEUER JAGDAUFTRAG" % hunt_level
 	hint_label.text = "SAMMLE NAHRUNG UND LOCKE DEN WESPEN-MINIBOSS AN"
 	_update_hud()
-	if xp >= xp_target:
-		_open_upgrade()
+	_open_contract_selection()
 
 
 func _update_threads(delta: float) -> void:
@@ -1533,7 +1757,7 @@ func _apply_wind_gust() -> void:
 		return
 	var chosen := candidates[randi() % candidates.size()]
 	var vibration_strain := 1.0 + vibration * 0.004
-	edge_health[chosen] = maxf(0.0, edge_health[chosen] - 18.0 * wind_damage_multiplier * vibration_strain)
+	edge_health[chosen] = maxf(0.0, edge_health[chosen] - 18.0 * wind_damage_multiplier * vibration_strain * contract_damage_multiplier)
 	status_label.text = "WINDSTOSS – EIN FADEN WIRD SCHWÄCHER"
 
 
@@ -1788,6 +2012,7 @@ func _update_hud() -> void:
 	else:
 		hunt_goal_label.text = "JAGDZIEL L%d  ·  NAHRUNG %d/%d" % [hunt_level, hunt_food, hunt_goal]
 	build_label.text = _build_summary_text()
+	contract_label.text = "JAGDVERTRAG: %s" % String(current_contract.get("title", "WIRD GEWÄHLT"))
 
 
 func _build_summary_text() -> String:
@@ -1914,6 +2139,9 @@ func _draw_flight_warnings() -> void:
 			"fly": warning_color = Color(SKY, 0.38 + blink * 0.24)
 			"moth": warning_color = Color(HONEY, 0.4 + blink * 0.25)
 			"bee": warning_color = Color(ORANGE, 0.46 + blink * 0.28)
+			"beetle": warning_color = Color(BERRY, 0.5 + blink * 0.28)
+			"dragonfly": warning_color = Color(SKY, 0.58 + blink * 0.3)
+			"firefly": warning_color = Color(HONEY, 0.62 + blink * 0.3)
 		var y: float = spec["y"]
 		draw_dashed_line(Vector2(54.0, y), Vector2(1026.0, y), warning_color, 3.0, 24.0, true)
 		var from_left: bool = spec["from_left"]
@@ -1948,6 +2176,7 @@ func _draw_insects() -> void:
 		var is_bite_target := bite_active and int(insect["id"]) == bite_target_id
 		var texture := FLY_TEXTURE
 		var scale := 0.045
+		var insect_tint := Color.WHITE if not insect["caught"] else Color(1.0, 0.78, 0.62, 1.0)
 		if kind == "gnat":
 			scale = 0.025
 		elif kind == "moth":
@@ -1956,6 +2185,30 @@ func _draw_insects() -> void:
 		elif kind == "bee":
 			texture = BEE_TEXTURE
 			scale = 0.062
+		elif kind == "beetle":
+			texture = BEE_TEXTURE
+			scale = 0.068
+			insect_tint = Color(0.66, 0.48, 0.86, 1.0) if not insect["caught"] else Color(0.9, 0.64, 0.5, 1.0)
+			var shell_pulse := 1.0 + sin(elapsed_time * 4.0 + float(insect["phase"])) * 0.04
+			draw_circle(position, 39.0 * shell_pulse, Color(BERRY, 0.2))
+			draw_arc(position, 40.0 * shell_pulse, -2.5, -0.64, 22, Color(CREAM, 0.7), 4.0, true)
+		elif kind == "dragonfly":
+			texture = BEE_TEXTURE
+			scale = 0.052
+			insect_tint = Color(0.55, 0.9, 1.0, 1.0) if not insect["caught"] else Color(0.8, 0.76, 0.67, 1.0)
+			var wing_axis := Vector2.from_angle(rotation - PI * 0.5)
+			var wing_side := wing_axis.orthogonal()
+			draw_line(position - wing_axis * 4.0, position + wing_side * 42.0 - wing_axis * 20.0, Color(SKY, 0.5), 10.0, true)
+			draw_line(position - wing_axis * 4.0, position - wing_side * 42.0 - wing_axis * 20.0, Color(SKY, 0.5), 10.0, true)
+			draw_line(position + wing_axis * 8.0, position + wing_side * 34.0 + wing_axis * 28.0, Color(CREAM, 0.36), 8.0, true)
+			draw_line(position + wing_axis * 8.0, position - wing_side * 34.0 + wing_axis * 28.0, Color(CREAM, 0.36), 8.0, true)
+		elif kind == "firefly":
+			texture = FLY_TEXTURE
+			scale = 0.043
+			insect_tint = Color(1.0, 0.88, 0.36, 1.0)
+			var glow := 0.5 + sin(elapsed_time * 7.0 + float(insect["phase"])) * 0.5
+			draw_circle(position, 55.0 + glow * 14.0, Color(HONEY, 0.08 + glow * 0.08))
+			draw_circle(position, 18.0 + glow * 4.0, Color(HONEY, 0.34 + glow * 0.25))
 		elif kind == "wasp":
 			texture = WASP_TEXTURE
 			scale = 0.105
@@ -1978,7 +2231,10 @@ func _draw_insects() -> void:
 			var ring_radius := 88.0 if insect["boss"] else 59.0
 			draw_circle(position, ring_radius - 1.0, Color(DARK_MOSS, 0.34))
 			draw_arc(position, ring_radius, -PI * 0.5, -PI * 0.5 + TAU * remaining, 48, ring_color, 8.0, true)
-		_draw_texture_centered(texture, position, scale, rotation, Color.WHITE if not insect["caught"] else Color(1.0, 0.78, 0.62, 1.0))
+		_draw_texture_centered(texture, position, scale, rotation, insect_tint)
+		if kind in ["beetle", "dragonfly", "firefly"] and not insect["caught"]:
+			var special_names := {"beetle": "PANZERKÄFER", "dragonfly": "LIBELLE", "firefly": "GLÜHWÜRMCHEN"}
+			draw_string(ThemeDB.fallback_font, position + Vector2(-76.0, -58.0), special_names[kind], HORIZONTAL_ALIGNMENT_CENTER, 152.0, 17, CREAM)
 		if insect["caught"] and not insect["auto_collect"] and not is_bite_target:
 			draw_arc(position, 72.0 + sin(elapsed_time * 10.0) * 4.0, 0.0, TAU, 32, Color(CREAM, 0.5), 3.0, true)
 

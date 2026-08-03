@@ -35,6 +35,7 @@ func _run() -> void:
 	assert(game.settings_button.button_down.is_connected(game._show_settings))
 	assert(game.update_button.button_down.is_connected(game._open_android_update))
 	assert(game.lure_button.button_down.is_connected(game._pluck_web))
+	assert(game.contract_one.button_down.is_connected(game._choose_contract.bind(0)))
 	game._toggle_reduced_motion()
 	assert(game.reduced_motion)
 	game.play_button.button_down.emit()
@@ -42,6 +43,17 @@ func _run() -> void:
 	assert(not game.menu_open)
 	assert(not game.start_menu.visible)
 	assert(game.hud.visible)
+	assert(game.contract_open)
+	assert(game.contract_overlay.visible)
+	assert(game.offered_contracts.size() == 3)
+	var contract_ids := {}
+	for contract in game.offered_contracts:
+		contract_ids[contract["id"]] = true
+	assert(contract_ids.size() == 3)
+	game._choose_contract(0)
+	assert(not game.contract_open)
+	assert(not game.contract_overlay.visible)
+	assert(not game.current_contract.is_empty())
 	game._open_main_menu()
 	assert(game.menu_open)
 	assert(not game.hud.visible)
@@ -56,6 +68,23 @@ func _run() -> void:
 	assert(not game.settings_overlay.visible)
 	game._start_game_from_menu()
 	assert(not game.menu_open)
+
+	# All special prey types have distinct behavior and can enter the hunt pool.
+	for special_kind in ["beetle", "dragonfly", "firefly"]:
+		var special_spec: Dictionary = game._create_special_insect_spec(special_kind)
+		assert(special_spec["kind"] == special_kind)
+		assert(special_spec["special"])
+	game.insects.clear()
+	var dragonfly_spec: Dictionary = game._create_special_insect_spec("dragonfly")
+	dragonfly_spec["from_left"] = true
+	game._spawn_insect_from_spec(dragonfly_spec)
+	game.insects[0]["position"] = Vector2(1200.0, 600.0)
+	game.insects[0]["velocity"] = Vector2(300.0, 0.0)
+	var passes_before: int = game.insects[0]["passes_left"]
+	game._update_insects(0.01)
+	assert(game.insects.size() == 1)
+	assert(game.insects[0]["passes_left"] == passes_before - 1)
+	game.insects.clear()
 
 	game._apply_upgrade_effect("armored_knots")
 	game._add_edge(0, 1)

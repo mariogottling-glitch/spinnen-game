@@ -784,3 +784,21 @@ Interface-Flächen über die Karte gelegt.
 
 Alle Effekte pulsieren langsam und mit niedriger Deckkraft. Das Netz bleibt das
 Kunstwerk; die Systeminformation erklärt es, ohne die Illustration zu verdecken.
+
+---
+
+# 33. Jagdverträge und Spezialbeute
+
+Die Vertragsauswahl verwendet drei große, leicht gefächerte Spielkarten wie die
+Upgrade-Auswahl, besitzt aber eine dunklere, gefährlichere Inszenierung. Jede Karte
+trennt Risiko, Belohnung und bevorzugtes Spezialtier klar voneinander. Ein großes
+geometrisches Siegel dient als schneller visueller Anker.
+
+Spezialtiere bleiben auch bei hoher Bewegung unterscheidbar:
+
+- Panzerkäfer: violette, schwere Schalenform und kräftiger Außenring.
+- Libelle: kühle Cyanfärbung und vier lange transparente Flügelspuren.
+- Glühwürmchen: warmer goldener Lichtkreis mit rhythmischem Puls.
+
+Name und Effektfarbe erscheinen nur dezent am Tier. Flugkorridor, Silhouette und
+Bewegungsmuster sollen die Identifikation im späteren Spiel weitgehend ohne Text ermöglichen.

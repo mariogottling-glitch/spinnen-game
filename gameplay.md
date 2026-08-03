@@ -765,3 +765,33 @@ Ab drei aktiven Fäden kann der Spieler das Netz mit **Netz zupfen** bewusst rei
 
 Der neue Kernrhythmus lautet damit: Form planen, Anflug lesen, Risiko auslösen,
 Fangtaschen ausnutzen, Kombo sichern und belastete Knoten reparieren.
+
+---
+
+# 27. Jagdverträge und Spezialtiere (umgesetzt)
+
+Vor jedem Jagdlevel werden drei unterschiedliche Verträge aus einem Pool von sechs
+angeboten. Ein Vertrag bleibt bis zum besiegten Wespen-Miniboss aktiv und verändert
+nicht nur Zahlen, sondern auch Tempo, bevorzugte Beute und die passende Netzstrategie.
+
+- **Gläserne Jagd:** mehr Fadenschaden, dafür deutlich mehr Nahrung und Panzerkäfer.
+- **Sturmkorridor:** schnellere und häufigere Anflüge, mehr XP und viele Libellen.
+- **Nachtleuchten:** kürzere Fangzeit, mehr Seide und häufige Glühwürmchen.
+- **Seidenhunger:** teurere Fäden, sehr hohe Nahrungsbelohnung und Panzerkäfer.
+- **Echo-Netz:** eine dauerhafte Mindestvibration für mehr XP und riskante Anflüge.
+- **Goldene Ruhe:** höheres Jagdziel, dafür weniger Netzschaden und seltenere Beute.
+
+## Spezialtiere
+
+- **Panzerkäfer:** langsam, schwer und zerstörerisch. Ohne starke Seide benötigt er
+  eine Fangtasche; ein Durchbruch beschädigt den Faden besonders stark. Sein Fang
+  verstärkt den schwächsten aktiven Faden.
+- **Libelle:** extrem schnell und wendet nach einem verpassten Anflug zweimal. Das
+  angekündigte Flugband muss gelesen und rechtzeitig mit einem Faden gekreuzt werden.
+  Ein Fang gibt zusätzliches Reaktions-XP.
+- **Glühwürmchen:** leichter zu halten, aber strategisch wertvoll. Sein Fang senkt
+  die Vibration deutlich und liefert zusätzliche Seide, wodurch aggressive
+  Netz-zupfen-Phasen kontrolliert beendet werden können.
+
+Verträge, Netzgeometrie und Perks bilden zusammen die drei Ebenen eines Runs:
+Levelregel wählen, Netz passend bauen und den Build auf die entstehenden Chancen ausrichten.

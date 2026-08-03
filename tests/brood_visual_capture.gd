@@ -11,6 +11,7 @@ func _capture() -> void:
 	root.add_child(game)
 	await process_frame
 	game._start_game_from_menu()
+	game._choose_contract(0)
 	for edge in [Vector2i(0, 12), Vector2i(12, 1), Vector2i(12, 13), Vector2i(13, 2), Vector2i(13, 14), Vector2i(14, 15), Vector2i(15, 12)]:
 		game.edges.append(edge)
 		game.edge_health.append(100.0)
