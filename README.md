@@ -22,6 +22,7 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Limited silk resource with distance-based thread costs and capture recovery
 - Permanent silk and XP progress bars with slower level pacing
 - Thread health, aging, wind damage, and global web integrity
+- Textured multi-fiber silk, reinforced braids, sticky dew strands, and illustrated web knots
 - Food objectives followed by a multi-hit wasp miniboss with an active timing-based bite duel
 - Increasing hunt targets while the web and chosen build persist between levels
 - Run restart after complete web collapse

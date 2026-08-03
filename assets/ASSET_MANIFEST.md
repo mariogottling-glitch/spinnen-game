@@ -96,3 +96,17 @@ a style and palette reference.
 The source was generated against a perfectly flat magenta chroma background and
 converted locally to RGBA with the imagegen skill's soft-matte and despill
 workflow. `ui/shelter-leaf-source-v1.png` preserves the generated chroma source.
+
+## Web-thread textures
+
+`web/thread-natural-v1.png`, `web/thread-reinforced-v1.png`, and
+`web/thread-sticky-v1.png` are stretchable horizontal game textures generated
+with the built-in ImageGen tool. Their prompts specify uninterrupted strands
+running through both image edges: delicate pearl microfibers for normal silk,
+a tight ivory-and-honey braid for reinforced silk, and silvery-cyan fibers with
+small dew beads for sticky silk. `web/thread-knot-v1.png` is a compact radial
+silk rosette with a warm honey center for junctions and endpoints.
+
+The source images used flat green or magenta chroma backgrounds. They were
+converted locally with soft matte and despill, cropped to their visible alpha
+bounds, and resized to mobile-friendly 1024 x 64 strips and a 128 x 128 knot.

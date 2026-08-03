@@ -19,6 +19,10 @@ const MOTH_TEXTURE: Texture2D = preload("res://assets/sprites/moth-v2.png")
 const FLY_TEXTURE: Texture2D = preload("res://assets/sprites/fly-v1.png")
 const BEE_TEXTURE: Texture2D = preload("res://assets/sprites/bee-v1.png")
 const WASP_TEXTURE: Texture2D = preload("res://assets/sprites/wasp-miniboss-v1.png")
+const THREAD_NATURAL_TEXTURE: Texture2D = preload("res://assets/web/thread-natural-v1.png")
+const THREAD_REINFORCED_TEXTURE: Texture2D = preload("res://assets/web/thread-reinforced-v1.png")
+const THREAD_STICKY_TEXTURE: Texture2D = preload("res://assets/web/thread-sticky-v1.png")
+const THREAD_KNOT_TEXTURE: Texture2D = preload("res://assets/web/thread-knot-v1.png")
 const UPGRADE_ICON_TEXTURES := {
 	"strong_silk": preload("res://assets/ui/upgrade-silk-v1.png"),
 	"elastic_threads": preload("res://assets/ui/perks/elastic-threads.png"),
@@ -1589,6 +1593,7 @@ func _draw_anchors() -> void:
 
 
 func _draw_web() -> void:
+	var node_degrees: Dictionary = {}
 	for i in range(edges.size()):
 		var edge := edges[i]
 		var health_ratio := clampf(edge_health[i] / maxf(thread_strength, 1.0), 0.0, 1.0)
@@ -1596,13 +1601,30 @@ func _draw_web() -> void:
 			continue
 		var a := anchors[edge.x]
 		var b := anchors[edge.y]
-		draw_line(a, b, Color(CREAM, 0.12 * health_ratio), 9.0, true)
-		var core_color := Color(HONEY, 0.48 + 0.42 * health_ratio) if strong_silk_level > 0 else Color(CREAM, 0.42 + 0.45 * health_ratio)
+		node_degrees[edge.x] = int(node_degrees.get(edge.x, 0)) + 1
+		node_degrees[edge.y] = int(node_degrees.get(edge.y, 0)) + 1
+		draw_line(a, b, Color(CREAM, 0.08 + 0.12 * health_ratio), 11.0, true)
+		var thread_texture := THREAD_REINFORCED_TEXTURE if strong_silk_level > 0 else THREAD_NATURAL_TEXTURE
+		var thread_height := 39.0 + float(strong_silk_level) * 2.0 if strong_silk_level > 0 else 29.0
+		_draw_thread_texture(thread_texture, a, b, thread_height, Color(1.0, 1.0, 1.0, 0.52 + 0.48 * health_ratio))
 		if sticky_level > 0:
-			draw_line(a, b, Color(SKY, 0.13 + 0.04 * minf(sticky_level, 3)), 7.0 + health_ratio, true)
-		draw_line(a, b, core_color, 2.5 + health_ratio + float(strong_silk_level) * 0.35, true)
-		draw_circle(a, 6.0, Color(HONEY, 0.8))
-		draw_circle(b, 6.0, Color(HONEY, 0.8))
+			var sticky_alpha := minf(0.9, 0.48 + float(sticky_level) * 0.12)
+			_draw_thread_texture(THREAD_STICKY_TEXTURE, a, b, 43.0 + float(sticky_level) * 2.0, Color(0.88, 0.97, 1.0, sticky_alpha * health_ratio))
+	for node_variant in node_degrees.keys():
+		var node: int = node_variant
+		var knot_scale := 0.23 if int(node_degrees[node]) >= 2 else 0.15
+		var knot_tint := Color(0.88, 0.97, 1.0, 0.9) if sticky_level > 0 else Color(1.0, 1.0, 1.0, 0.88)
+		_draw_texture_centered(THREAD_KNOT_TEXTURE, anchors[node], knot_scale, 0.0, knot_tint)
+
+
+func _draw_thread_texture(texture: Texture2D, a: Vector2, b: Vector2, height: float, modulate: Color) -> void:
+	var direction := b - a
+	var length := direction.length()
+	if length <= 0.5:
+		return
+	draw_set_transform(a, direction.angle(), Vector2.ONE)
+	draw_texture_rect(texture, Rect2(Vector2(0.0, -height * 0.5), Vector2(length, height)), false, modulate)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_insects() -> void:

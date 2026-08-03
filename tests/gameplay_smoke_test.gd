@@ -19,6 +19,10 @@ func _run() -> void:
 		icon_keys[upgrade["icon"]] = true
 	assert(icon_keys.size() == all_upgrades.size())
 	assert(game.UPGRADE_ICON_TEXTURES.size() == all_upgrades.size())
+	assert(game.THREAD_NATURAL_TEXTURE != null)
+	assert(game.THREAD_REINFORCED_TEXTURE != null)
+	assert(game.THREAD_STICKY_TEXTURE != null)
+	assert(game.THREAD_KNOT_TEXTURE != null)
 
 	assert(game.menu_open)
 	assert(game.start_menu.visible)

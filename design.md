@@ -319,6 +319,14 @@ Schwingt minimal
 
 Ankerpunkte leuchten
 
+Umsetzung im Prototyp
+
+- Normale Seide besteht sichtbar aus mehreren leicht unregelmäßigen Einzelfasern.
+- Starke Seide wechselt auf eine dichtere, warm-golden verflochtene Textur.
+- Klebrige Seide zeigt kühle Glanzfasern und kleine Tautropfen.
+- Kreuzungen erhalten eigene gewickelte Seidenknoten statt einfacher Kreise.
+- Sinkende Fadenhaltbarkeit reduziert die Deckkraft der Textur, ohne die Lesbarkeit zu verlieren.
+
 Je dichter das Netz wird,
 
 desto beeindruckender wirkt es.

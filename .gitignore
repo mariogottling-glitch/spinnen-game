@@ -3,6 +3,7 @@
 
 # Local QA captures and temporary previews
 /artifacts/
+/tmp/
 /.codex-remote-attachments/
 
 # Operating-system and editor noise
