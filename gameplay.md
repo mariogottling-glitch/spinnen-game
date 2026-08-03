@@ -627,8 +627,10 @@ XP und Nahrung bleiben getrennte Werte.
 - Gewöhnliche Fliegen geben wenig XP.
 - Motten geben mittlere XP.
 - Seltene Bienen geben deutlich mehr XP.
-- Das erste Level benötigt 24 XP.
-- Der XP-Bedarf steigt pro Level ungefähr um den Faktor 1,35.
+- Das erste Upgrade benötigt 8 XP.
+- Der XP-Bedarf steigt pro Build-Level ungefähr um den Faktor 1,45.
+- Der erste Abschlussboss erscheint frühestens nach zwei Upgrade-Wahlen. Dadurch
+  kann der Spieler vor der ersten Build-Prüfung eine erkennbare Richtung formen.
 - Der Fortschritt wird über einen permanent sichtbaren XP-Balken kommuniziert.
 
 Frühe Level-Ups sollen nicht nach wenigen Sekunden erscheinen. Zielwert für die
@@ -675,6 +677,23 @@ Reparieren. Ein großes passives Netz ist keine dauerhafte Gewinnstrategie mehr.
 Der Prototyp besitzt aktuell 29 Upgrades in fünf Build-Pfaden. Höhere Perks
 werden erst sichtbar, wenn ihre Voraussetzungen erfüllt sind. Jede Auswahl zieht
 drei unterschiedliche Karten aus dem gerade freigeschalteten Pool.
+
+Pro Jagdlevel steht ein kostenloses Neumischen zur Verfügung. Bereits investierte
+Build-Pfade erhalten eine sanfte Angebotsgewichtung, ohne andere Pfade zu sperren.
+So bleibt der Roguelite-Zufall bestehen, während ein geplanter Build realistischer wird.
+
+## Runder Ablauf ab Prototype 0.12
+
+- Das erste Jagdlevel führt in vier kontextuellen Schritten durch Sprung,
+  Fangtasche, aktiven Fang und Netz-Zupfen.
+- Ein Jagdlevel endet mit Nahrungsvorgabe und Abschlussbeute.
+- Der Ergebnisbildschirm zeigt Netzrang, Build und Vertragsabschluss.
+- Nach fünf Jagdleveln endet der Run mit einer eigenen Abschlussauswertung.
+- Ein Run scheitert sichtbar, wenn alle Fäden kollabiert sind und keine Seide für
+  eine neue Verbindung verbleibt.
+- Festungswerte mindern Fehlschlagschaden, Fallenwerte und Fangtaschen vergrößern
+  das Bissfenster, Jägerinnen-Perks erhöhen Schaden, Ökonomie verbessert die
+  Bossbelohnung und die Brut kann aktiv am Bosskampf teilnehmen.
 
 ## Neue freischaltbare Perks
 

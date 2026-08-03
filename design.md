@@ -753,3 +753,25 @@ Perk-Illustrationen bleiben individuell. Solange ein Motiv noch aus der ersten
 Assetgeneration stammt, wird es im Upgrade-Screen vollständig auf die sechs
 Fadenschnittfarben quantisiert. Dadurch dürfen weder Fremdfarben noch Glanz- oder
 3D-Licht im sichtbaren Spiel verbleiben.
+
+---
+
+# 35. Nutzerführung und Run-Dramaturgie
+
+Das Interface zeigt Systeme nicht mehr alle gleichzeitig, sondern nach Relevanz.
+
+- Im ersten Jagdlevel führt ein kompakter Vier-Schritt-Banner durch Sprung,
+  Fangtasche, aktiven Fang und Netz-Zupfen.
+- Vibration erscheint erst, wenn das Netz gezupft werden kann oder tatsächlich
+  unruhig ist. Netzglyphen erscheinen erst, wenn mindestens eine Form aktiv ist.
+- Vertrag und vollständige Build-Zusammenfassung bleiben in Auswahl- und
+  Ergebniszuständen sichtbar, statt dauerhaft die Spielfläche zu belegen.
+- Der erste Boss wartet auf zwei Upgrade-Entscheidungen. XP-Aufstieg und
+  Jagdabschluss dürfen nicht mehr denselben Moment beanspruchen.
+- Jede Upgrade-Auswahl besitzt ein kostenloses Neumischen pro Jagdlevel. Eine
+  sanfte Pfadgewichtung macht bewusste Builds möglich, ohne Zufall auszuschalten.
+- Der Levelabschluss ist eine eigene Fadenschnitt-Karte mit Netzrang,
+  Vertragsresultat, Build und eindeutigem Weiter-Button.
+- Ein vollständiger Run umfasst fünf Jagdgebiete und endet mit einer sichtbaren
+  Auswertung. Kollaps und erfolgreicher Abschluss verwenden dieselbe klare
+  Ergebnisstruktur.

@@ -67,6 +67,8 @@ func _run() -> void:
 	assert(not game.contract_open)
 	assert(not game.contract_overlay.visible)
 	assert(not game.current_contract.is_empty())
+	assert(game.tutorial_banner.visible)
+	assert(game.tutorial_step == 0)
 	game._open_main_menu()
 	assert(game.menu_open)
 	assert(not game.hud.visible)
@@ -188,6 +190,11 @@ func _run() -> void:
 	for upgrade in game.offered_upgrades:
 		offered_ids[upgrade["id"]] = true
 	assert(offered_ids.size() == 3)
+	assert(game.upgrade_rerolls_remaining == 1)
+	game._reroll_upgrades()
+	assert(game.upgrade_rerolls_remaining == 0)
+	assert(game.upgrade_reroll_button.disabled)
+	assert(game._upgrade_offer_weight({"weight": 10, "build": "BRUT"}) >= 10.0)
 
 	game.upgrade_open = false
 	game.upgrade_overlay.visible = false
@@ -236,6 +243,16 @@ func _run() -> void:
 	game._resolve_bite_timing()
 	assert(game.level_complete)
 	assert(game.level_complete_overlay.visible)
+	assert(game.level_complete_button.visible)
+	assert(game.level_complete_rank.text.begins_with("NETZRANG"))
+
+	# A run has a deliberate ending after five hunts instead of continuing forever.
+	game.level_complete = false
+	game.hunt_level = 5
+	game._complete_hunt_level()
+	assert(game.run_complete)
+	assert(game.level_complete_title.text == "JAGD ERFOLGREICH")
+	assert(game.level_complete_button.text == "NEUE JAGD BEGINNEN")
 
 	print("GAMEPLAY_SMOKE_TEST_OK")
 	quit(0)

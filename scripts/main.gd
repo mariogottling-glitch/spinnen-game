@@ -161,6 +161,7 @@ var next_insect_id := 1
 var pounce_target_id := -1
 var upgrade_levels: Dictionary = {}
 var offered_upgrades: Array[Dictionary] = []
+var upgrade_rerolls_remaining := 1
 var thread_decay_multiplier := 1.0
 var wind_damage_multiplier := 1.0
 var struggle_damage_multiplier := 1.0
@@ -241,10 +242,13 @@ var hunt_food := 0
 var hunt_goal := 24
 var boss_active := false
 var level_complete := false
+var run_complete := false
+var tutorial_step := 0
 var menu_open := true
 var run_started := false
 var reduced_motion := false
 var menu_transitioning := false
+var reset_confirmation_pending := false
 
 @onready var integrity_label: Label = $HUD/Integrity
 @onready var hud: CanvasLayer = $HUD
@@ -259,9 +263,11 @@ var menu_transitioning := false
 @onready var xp_label: Label = $HUD/XPLabel
 @onready var upgrade_overlay: ColorRect = $HUD/UpgradeOverlay
 @onready var upgrade_level_caption: Label = $HUD/UpgradeOverlay/LevelCaption
+@onready var upgrade_build_hint: Label = $HUD/UpgradeOverlay/BuildHint
 @onready var upgrade_one: Button = $HUD/UpgradeOverlay/UpgradeOne
 @onready var upgrade_two: Button = $HUD/UpgradeOverlay/UpgradeTwo
 @onready var upgrade_three: Button = $HUD/UpgradeOverlay/UpgradeThree
+@onready var upgrade_reroll_button: Button = $HUD/UpgradeOverlay/RerollButton
 @onready var hunt_goal_label: Label = $HUD/HuntGoal
 @onready var build_label: Label = $HUD/BuildSummary
 @onready var vibration_label: Label = $HUD/VibrationLabel
@@ -272,6 +278,11 @@ var menu_transitioning := false
 @onready var level_complete_overlay: ColorRect = $HUD/LevelCompleteOverlay
 @onready var level_complete_title: Label = $HUD/LevelCompleteOverlay/Title
 @onready var level_complete_detail: Label = $HUD/LevelCompleteOverlay/Detail
+@onready var level_complete_rank: Label = $HUD/LevelCompleteOverlay/Rank
+@onready var level_complete_build: Label = $HUD/LevelCompleteOverlay/Build
+@onready var level_complete_button: Button = $HUD/LevelCompleteOverlay/ContinueButton
+@onready var tutorial_banner: Panel = $HUD/TutorialBanner
+@onready var tutorial_label: Label = $HUD/TutorialBanner/Label
 @onready var contract_overlay: ColorRect = $HUD/ContractOverlay
 @onready var contract_level_caption: Label = $HUD/ContractOverlay/LevelCaption
 @onready var contract_one: Button = $HUD/ContractOverlay/ContractOne
@@ -299,6 +310,8 @@ func _ready() -> void:
 	upgrade_one.pressed.connect(_choose_upgrade.bind(0))
 	upgrade_two.pressed.connect(_choose_upgrade.bind(1))
 	upgrade_three.pressed.connect(_choose_upgrade.bind(2))
+	upgrade_reroll_button.pressed.connect(_reroll_upgrades)
+	level_complete_button.pressed.connect(_continue_after_result)
 	menu_button.pressed.connect(_open_main_menu)
 	play_button.button_down.connect(_start_game_from_menu)
 	how_to_button.button_down.connect(_show_how_to)
@@ -307,7 +320,7 @@ func _ready() -> void:
 	how_to_back_button.pressed.connect(_close_menu_panel)
 	settings_back_button.pressed.connect(_close_menu_panel)
 	motion_button.pressed.connect(_toggle_reduced_motion)
-	reset_button.pressed.connect(_prepare_new_run)
+	reset_button.pressed.connect(_confirm_or_prepare_new_run)
 	lure_button.button_down.connect(_pluck_web)
 	contract_one.button_down.connect(_choose_contract.bind(0))
 	contract_two.button_down.connect(_choose_contract.bind(1))
@@ -392,7 +405,7 @@ func _activate_menu_control_at(tap_position: Vector2) -> bool:
 		if motion_button.get_global_rect().has_point(tap_position):
 			_toggle_reduced_motion()
 		elif reset_button.get_global_rect().has_point(tap_position):
-			_prepare_new_run()
+			_confirm_or_prepare_new_run()
 		elif settings_back_button.get_global_rect().has_point(tap_position):
 			_close_menu_panel()
 		return true
@@ -446,10 +459,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_resolve_bite_timing()
 		return
 	if game_over:
-		_reset_run()
+		_continue_after_result()
 		return
 	if level_complete:
-		_start_next_hunt_level()
+		_continue_after_result()
 		return
 	if not upgrade_open:
 		var prey_index := _caught_insect_at(tap_position)
@@ -532,6 +545,8 @@ func _open_android_update() -> void:
 func _close_menu_panel() -> void:
 	how_to_overlay.visible = false
 	settings_overlay.visible = false
+	reset_confirmation_pending = false
+	reset_button.text = "NEUE JAGD VORBEREITEN"
 
 
 func _toggle_reduced_motion() -> void:
@@ -545,6 +560,16 @@ func _prepare_new_run() -> void:
 	play_button.text = "JAGD BEGINNEN"
 	settings_overlay.visible = false
 	status_label.text = "NEUE JAGD VORBEREITET"
+	reset_confirmation_pending = false
+	reset_button.text = "NEUE JAGD VORBEREITEN"
+
+
+func _confirm_or_prepare_new_run() -> void:
+	if not reset_confirmation_pending:
+		reset_confirmation_pending = true
+		reset_button.text = "NOCHMAL TIPPEN ZUM ZURÜCKSETZEN"
+		return
+	_prepare_new_run()
 
 
 func _reset_run() -> void:
@@ -593,6 +618,7 @@ func _reset_run() -> void:
 	pounce_target_id = -1
 	upgrade_levels.clear()
 	offered_upgrades.clear()
+	upgrade_rerolls_remaining = 1
 	thread_decay_multiplier = 1.0
 	wind_damage_multiplier = 1.0
 	struggle_damage_multiplier = 1.0
@@ -645,7 +671,7 @@ func _reset_run() -> void:
 	silk = silk_max
 	food = 0
 	xp = 0
-	xp_target = 24
+	xp_target = 8
 	level = 1
 	upgrade_open = false
 	upgrade_selecting = false
@@ -656,6 +682,8 @@ func _reset_run() -> void:
 	_reset_contract_modifiers()
 	boss_active = false
 	level_complete = false
+	run_complete = false
+	tutorial_step = 0
 	elapsed_time = 0.0
 	preview_timer = 0.0
 	insect_timer = 0.0
@@ -666,6 +694,7 @@ func _reset_run() -> void:
 	_create_pollen()
 	upgrade_overlay.visible = false
 	level_complete_overlay.visible = false
+	tutorial_banner.visible = false
 	status_label.text = "DAS NETZ WÄCHST"
 	hint_label.text = "TIPPE, UM ZUM LEUCHTENDEN PUNKT ZU SPRINGEN"
 	_select_next_preview()
@@ -723,6 +752,9 @@ func _jump_to_preview() -> void:
 	spider_visual_scale = Vector2(1.12, 0.84)
 	landing_timer = 0.22
 	_start_auto_travel()
+	if tutorial_step == 0 and hunt_level == 1:
+		tutorial_step = 1
+		_update_tutorial_banner()
 	_select_next_preview()
 
 
@@ -1048,6 +1080,9 @@ func _pluck_web() -> void:
 		return
 	lure_cooldown = LURE_COOLDOWN
 	vibration = minf(100.0, vibration + 34.0)
+	if tutorial_step == 3 and hunt_level == 1:
+		tutorial_step = 4
+		_update_tutorial_banner()
 	_queue_insect_warning(true, 0.0)
 	_queue_insect_warning(true, 0.34)
 	_queue_insect_warning(true, 0.68)
@@ -1133,6 +1168,9 @@ func _choose_contract(choice: int) -> void:
 	contract_overlay.visible = false
 	status_label.text = "VERTRAG AKTIV: %s" % current_contract["title"]
 	hint_label.text = "%s · %s" % [current_contract["risk"], current_contract["reward"]]
+	if hunt_level == 1 and upgrade_levels.is_empty():
+		tutorial_step = 0
+		_update_tutorial_banner()
 	_update_hud()
 	if xp >= xp_target and not upgrade_open:
 		_open_upgrade()
@@ -1570,19 +1608,24 @@ func _resolve_bite_timing() -> void:
 	var captured_edge: int = insect["edge"]
 	var captured_phase: float = insect["phase"]
 	var timing_distance := absf(bite_progress - bite_target_center)
+	var trap_window_bonus := minf(0.09, maxf(0.0, escape_time_multiplier - 1.0) * 0.08)
+	if bool(insect.get("glyph_capture", false)):
+		trap_window_bonus += 0.04
+	var perfect_window := BITE_PERFECT_WINDOW + trap_window_bonus
+	var good_padding := BITE_GOOD_PADDING + trap_window_bonus * 0.65
 	var damage := 0
 	var result_message := "BISS VERPASST – DER MINIBOSS ZERREISST DEN FADEN!"
-	if timing_distance <= BITE_PERFECT_WINDOW * 0.5:
+	if timing_distance <= perfect_window * 0.5:
 		damage = boss_damage + 1
 		xp += 2
 		silk = minf(silk_max, silk + 5.0)
 		result_message = "PERFEKTER BISS! +2 XP · +5 SEIDE"
-	elif timing_distance <= BITE_PERFECT_WINDOW * 0.5 + BITE_GOOD_PADDING:
+	elif timing_distance <= perfect_window * 0.5 + good_padding:
 		damage = boss_damage
 		result_message = "BISS GETROFFEN!"
 	else:
 		if captured_edge >= 0 and captured_edge < edge_health.size():
-			edge_health[captured_edge] = maxf(0.0, edge_health[captured_edge] - 28.0 - float(hunt_level - 1) * 3.0)
+			edge_health[captured_edge] = maxf(0.0, edge_health[captured_edge] - (28.0 + float(hunt_level - 1) * 3.0) * struggle_damage_multiplier)
 	if damage > 0:
 		insect["boss_hits"] = maxi(0, int(insect["boss_hits"]) - damage)
 	if int(insect["boss_hits"]) <= 0:
@@ -1716,6 +1759,9 @@ func _collect_insect(index: int, allow_chain: bool = true) -> void:
 	var silk_gain := (4.0 + float(value) * 2.0) * local_silk_multiplier
 	silk = minf(silk_max, silk + silk_gain)
 	vibration = minf(100.0, vibration + 1.5 + float(value) * 0.65)
+	if not was_auto and tutorial_step == 2 and hunt_level == 1:
+		tutorial_step = 3
+		_update_tutorial_banner()
 	match String(insect["kind"]):
 		"firefly":
 			vibration = maxf(contract_vibration_floor, vibration - 28.0)
@@ -1739,10 +1785,15 @@ func _collect_insect(index: int, allow_chain: bool = true) -> void:
 				_collect_insect(chained_index, false)
 				status_label.text = "KETTENFANG - ZWEITE BEUTE EINGEWICKELT!"
 				break
-	if hunt_food >= hunt_goal and not boss_active:
+	if hunt_food >= hunt_goal and not boss_active and _boss_build_ready():
 		_spawn_boss_moth()
 	if xp >= xp_target and not level_complete:
 		_open_upgrade()
+
+
+func _boss_build_ready() -> bool:
+	# The first hunt teaches the build loop before testing it against a boss.
+	return hunt_level > 1 or level >= 3
 
 
 func _repair_weakest_thread(amount: float) -> void:
@@ -1758,6 +1809,7 @@ func _repair_weakest_thread(amount: float) -> void:
 
 func _complete_hunt_level() -> void:
 	level_complete = true
+	run_complete = hunt_level >= 5
 	boss_active = false
 	bite_active = false
 	bite_target_id = -1
@@ -1766,11 +1818,48 @@ func _complete_hunt_level() -> void:
 	vibration = maxf(0.0, vibration - 30.0)
 	lure_button.visible = false
 	level_complete_overlay.visible = true
-	level_complete_title.text = "LEVEL %d GESCHAFFT" % hunt_level
+	level_complete_title.text = "JAGD ERFOLGREICH" if run_complete else "LEVEL %d GESCHAFFT" % hunt_level
 	var contract_name := String(current_contract.get("title", "NORMALE JAGD"))
-	level_complete_detail.text = "%d Nahrung gesammelt\n%s erfüllt · Miniboss besiegt\n\nTIPPE FÜR LEVEL %d" % [hunt_food, contract_name, hunt_level + 1]
+	level_complete_rank.text = "NETZRANG  %s" % _calculate_net_rank()
+	level_complete_build.text = _build_summary_text()
+	if run_complete:
+		level_complete_detail.text = "5 Jagdgebiete überstanden\n%d Nahrung gesammelt · Abschlussbeute besiegt" % food
+		level_complete_button.text = "NEUE JAGD BEGINNEN"
+	else:
+		level_complete_detail.text = "%d Nahrung gesammelt\n%s erfüllt · Miniboss besiegt" % [hunt_food, contract_name]
+		level_complete_button.text = "WEITER ZU LEVEL %d" % (hunt_level + 1)
+	level_complete_button.visible = true
 	status_label.text = "JAGDAUFTRAG ERFÜLLT"
-	hint_label.text = "TIPPE, UM WEITERZUSPIELEN"
+	hint_label.text = "DEIN NETZ UND BUILD WERDEN ÜBERNOMMEN"
+
+
+func _calculate_net_rank() -> String:
+	var active_threads := 0
+	for health in edge_health:
+		if health > 0.0:
+			active_threads += 1
+	var score := integrity + float(active_threads) * 2.0 + float(web_glyphs.size()) * 9.0
+	if score >= 150.0:
+		return "S"
+	if score >= 120.0:
+		return "A"
+	if score >= 90.0:
+		return "B"
+	if score >= 60.0:
+		return "C"
+	return "D"
+
+
+func _continue_after_result() -> void:
+	if game_over or run_complete:
+		_reset_run()
+		run_started = true
+		game_over = false
+		level_complete = false
+		level_complete_overlay.visible = false
+		_open_contract_selection()
+	else:
+		_start_next_hunt_level()
 
 
 func _start_next_hunt_level() -> void:
@@ -1780,7 +1869,9 @@ func _start_next_hunt_level() -> void:
 	boss_active = false
 	emergency_reserve_used = false
 	level_complete = false
+	run_complete = false
 	level_complete_overlay.visible = false
+	upgrade_rerolls_remaining = 1
 	insect_timer = 0.0
 	flight_warnings.clear()
 	vibration = maxf(0.0, vibration - 25.0)
@@ -1850,6 +1941,10 @@ func _open_upgrade() -> void:
 	upgrade_open = true
 	upgrade_selecting = false
 	upgrade_overlay.visible = true
+	upgrade_build_hint.text = "%s  ·  NEU MISCHEN BEVORZUGT DEINE PFADE" % _build_summary_text()
+	upgrade_reroll_button.visible = true
+	upgrade_reroll_button.disabled = upgrade_rerolls_remaining <= 0
+	upgrade_reroll_button.text = "NEU MISCHEN · %d" % upgrade_rerolls_remaining
 	upgrade_level_caption.text = "LEVEL %d" % (level + 1)
 	status_label.text = "LEVEL %d" % (level + 1)
 	var cards: Array[Button] = [upgrade_one, upgrade_two, upgrade_three]
@@ -1884,17 +1979,51 @@ func _roll_upgrade_offer() -> Array[Dictionary]:
 	while result.size() < 3 and not candidates.is_empty():
 		var total_weight := 0.0
 		for candidate in candidates:
-			total_weight += float(candidate["weight"])
+			total_weight += _upgrade_offer_weight(candidate)
 		var roll := randf() * total_weight
 		var selected_index := 0
 		for i in range(candidates.size()):
-			roll -= float(candidates[i]["weight"])
+			roll -= _upgrade_offer_weight(candidates[i])
 			if roll <= 0.0:
 				selected_index = i
 				break
 		result.append(candidates[selected_index])
 		candidates.remove_at(selected_index)
 	return result
+
+
+func _upgrade_offer_weight(upgrade: Dictionary) -> float:
+	var base_weight := float(upgrade["weight"])
+	var build_name := String(upgrade["build"])
+	var build_investment := 0
+	for owned in UpgradeDB.all():
+		if String(owned["build"]) == build_name:
+			build_investment += int(upgrade_levels.get(owned["id"], 0))
+	# Existing choices gently steer future offers without locking other paths out.
+	return base_weight * minf(2.25, 1.0 + float(build_investment) * 0.3)
+
+
+func _reroll_upgrades() -> void:
+	if not upgrade_open or upgrade_selecting or upgrade_rerolls_remaining <= 0:
+		return
+	upgrade_rerolls_remaining -= 1
+	var previous_ids: Array[String] = []
+	for upgrade in offered_upgrades:
+		previous_ids.append(String(upgrade["id"]))
+	for attempt in range(4):
+		offered_upgrades = _roll_upgrade_offer()
+		var changed := false
+		for upgrade in offered_upgrades:
+			if not previous_ids.has(String(upgrade["id"])):
+				changed = true
+				break
+		if changed:
+			break
+	var cards: Array[Button] = [upgrade_one, upgrade_two, upgrade_three]
+	for i in range(mini(cards.size(), offered_upgrades.size())):
+		_configure_upgrade_card(cards[i], offered_upgrades[i])
+	upgrade_reroll_button.disabled = true
+	upgrade_reroll_button.text = "NEU MISCHEN · 0"
 
 
 func _configure_upgrade_card(card: Button, upgrade: Dictionary) -> void:
@@ -1943,11 +2072,14 @@ func _choose_upgrade(choice: int) -> void:
 
 	xp -= xp_target
 	level += 1
-	xp_target = roundi(24.0 * pow(1.35, level - 1))
+	xp_target = roundi(8.0 * pow(1.45, level - 1))
 	upgrade_open = false
 	upgrade_overlay.visible = false
+	upgrade_reroll_button.visible = false
 	upgrade_selecting = false
 	_update_hud()
+	if hunt_food >= hunt_goal and not boss_active and _boss_build_ready():
+		_spawn_boss_moth()
 
 
 func _apply_upgrade_effect(upgrade_id: String) -> void:
@@ -2044,12 +2176,23 @@ func _end_run() -> void:
 	travel_to = -1
 	flight_warnings.clear()
 	lure_button.visible = false
+	level_complete_overlay.visible = true
+	level_complete_title.text = "NETZ KOLLABIERT"
+	level_complete_rank.text = "JAGD BEENDET"
+	level_complete_build.text = _build_summary_text()
+	level_complete_detail.text = "Level %d erreicht · %d Nahrung gesammelt\nAlle Fäden sind gerissen und die Seide ist erschöpft." % [hunt_level, food]
+	level_complete_button.text = "NEUE JAGD BEGINNEN"
+	level_complete_button.visible = true
 	status_label.text = "DAS NETZ IST KOLLABIERT"
-	hint_label.text = "TIPPE, UM EIN NEUES NETZ ZU BEGINNEN"
+	hint_label.text = "BAUE KÜRZER ODER SICHERE DIR EINE NOTRESERVE"
 
 
 func _update_hud() -> void:
-	integrity_label.text = "NETZ-INTEGRITÄT %d %%" % roundi(integrity)
+	integrity_label.text = "NETZ  %d %%" % roundi(integrity)
+	if integrity <= 25.0:
+		integrity_label.add_theme_color_override("font_color", Color("ef6a42"))
+	else:
+		integrity_label.add_theme_color_override("font_color", Color("f4c556"))
 	var active_threads := 0
 	for health in edge_health:
 		if health > 0.0:
@@ -2085,6 +2228,9 @@ func _update_hud() -> void:
 		if glyph_combo > 1:
 			glyph_label.text += " · KOMBO x%d" % glyph_combo
 	lure_button.visible = active_threads >= 3 and not boss_active and not level_complete and not game_over
+	vibration_label.visible = lure_button.visible or vibration >= 10.0
+	vibration_bar.visible = vibration_label.visible
+	glyph_label.visible = triangle_count > 0 or heart_count > 0
 	lure_button.disabled = lure_cooldown > 0.0 or upgrade_open
 	lure_button.text = "ZUPFEN %.0f s" % ceilf(lure_cooldown) if lure_cooldown > 0.0 else "NETZ ZUPFEN"
 	if boss_active:
@@ -2094,10 +2240,33 @@ func _update_hud() -> void:
 				active_boss_name = _boss_display_name(String(insect["kind"]))
 				break
 		hunt_goal_label.text = "LEVEL %d · %s" % [hunt_level, active_boss_name]
+	elif hunt_food >= hunt_goal and not _boss_build_ready():
+		hunt_goal_label.text = "JAGDZIEL ERFÜLLT  ·  NOCH %d UPGRADE BIS BOSS" % maxi(0, 3 - level)
 	else:
 		hunt_goal_label.text = "JAGDZIEL L%d  ·  NAHRUNG %d/%d" % [hunt_level, hunt_food, hunt_goal]
 	build_label.text = _build_summary_text()
+	build_label.visible = not upgrade_levels.is_empty()
 	contract_label.text = "JAGDVERTRAG: %s" % String(current_contract.get("title", "WIRD GEWÄHLT"))
+	contract_label.visible = false
+	if tutorial_step == 1 and triangle_count > 0 and hunt_level == 1:
+		tutorial_step = 2
+		_update_tutorial_banner()
+
+
+func _update_tutorial_banner() -> void:
+	if hunt_level != 1 or tutorial_step >= 4:
+		tutorial_banner.visible = false
+		return
+	tutorial_banner.visible = true
+	match tutorial_step:
+		0:
+			tutorial_label.text = "1/4  TIPPE AUF DEN LEUCHTENDEN ZIELPUNKT"
+		1:
+			tutorial_label.text = "2/4  BAUE EIN DREIECK ALS FANGTASCHE"
+		2:
+			tutorial_label.text = "3/4  TIPPE GEFANGENE BEUTE VOR ABLAUF DES RINGS"
+		3:
+			tutorial_label.text = "4/4  NUTZE NETZ ZUPFEN FÜR EINEN RISIKOSCHWARM"
 
 
 func _build_summary_text() -> String:
