@@ -1,0 +1,17 @@
+# Godot-generated editor and import cache
+/.godot/
+
+# Local QA captures and temporary previews
+/artifacts/
+
+# Operating-system and editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Local export output
+/build/
+/exports/
+*.apk
+*.aab
