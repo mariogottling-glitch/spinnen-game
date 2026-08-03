@@ -42,7 +42,12 @@ const UPGRADE_ICON_TEXTURES := {
 	"predator_focus": preload("res://assets/ui/perks/predator-focus.png"),
 	"silk_dash": preload("res://assets/ui/perks/silk-dash.png"),
 	"emergency_reserve": preload("res://assets/ui/perks/emergency-reserve.png"),
-	"rich_cocoon": preload("res://assets/ui/perks/rich-cocoon.png")
+	"rich_cocoon": preload("res://assets/ui/perks/rich-cocoon.png"),
+	"brood_nest": preload("res://assets/ui/perks/brood-nest.png"),
+	"silk_menders": preload("res://assets/ui/perks/silk-menders.png"),
+	"young_hunters": preload("res://assets/ui/perks/young-hunters.png"),
+	"swarm_instinct": preload("res://assets/ui/perks/swarm-instinct.png"),
+	"spider_queen": preload("res://assets/ui/perks/spider-queen.png")
 }
 const UpgradeDB = preload("res://scripts/upgrade_database.gd")
 
@@ -63,6 +68,7 @@ var edge_age: Array[float] = []
 var insects: Array[Dictionary] = []
 var pollen_particles: Array[Dictionary] = []
 var capture_flashes: Array[Dictionary] = []
+var helper_spiders: Array[Dictionary] = []
 
 var spider_position := Vector2.ZERO
 var current_node := -1
@@ -114,6 +120,12 @@ var pounce_repair_amount := 0.0
 var emergency_reserve_level := 0
 var emergency_reserve_used := false
 var boss_reward_multiplier := 1.0
+var brood_nest_level := 0
+var silk_menders_level := 0
+var young_hunters_level := 0
+var swarm_instinct_level := 0
+var spider_queen_level := 0
+var helper_action_timer := 0.0
 
 var preview_cursor := 0
 var preview_anchor := -1
@@ -226,6 +238,7 @@ func _process(delta: float) -> void:
 
 	_update_spider(delta)
 	_update_spider_animation(delta)
+	_update_helper_spiders(delta)
 	_update_threads(delta)
 	_update_insects(delta)
 	_try_emergency_reserve()
@@ -373,6 +386,7 @@ func _reset_run() -> void:
 	insects.clear()
 	pollen_particles.clear()
 	capture_flashes.clear()
+	helper_spiders.clear()
 
 	var center := PLAY_RECT.get_center()
 	anchors = [
@@ -429,6 +443,12 @@ func _reset_run() -> void:
 	emergency_reserve_level = 0
 	emergency_reserve_used = false
 	boss_reward_multiplier = 1.0
+	brood_nest_level = 0
+	silk_menders_level = 0
+	young_hunters_level = 0
+	swarm_instinct_level = 0
+	spider_queen_level = 0
+	helper_action_timer = 0.0
 
 	thread_strength = 100.0
 	capture_radius = 15.0
@@ -600,6 +620,97 @@ func _neighbors(node: int) -> Array[int]:
 		elif edge.y == node:
 			result.append(edge.x)
 	return result
+
+
+func _sync_helper_spiders() -> void:
+	var desired_count := brood_nest_level + swarm_instinct_level + spider_queen_level * 2
+	while helper_spiders.size() < desired_count:
+		var spawn_node := current_node if current_node >= 0 and current_node < anchors.size() else 0
+		helper_spiders.append({
+			"position": anchors[spawn_node],
+			"node": spawn_node,
+			"previous": -1,
+			"from_node": -1,
+			"to_node": -1,
+			"progress": 0.0,
+			"rotation": 0.0,
+			"anim_time": randf() * 4.0
+		})
+	while helper_spiders.size() > desired_count:
+		helper_spiders.pop_back()
+	helper_action_timer = minf(helper_action_timer, 1.5)
+
+
+func _update_helper_spiders(delta: float) -> void:
+	if helper_spiders.is_empty():
+		return
+	for helper in helper_spiders:
+		helper["anim_time"] = float(helper["anim_time"]) + delta * (6.0 + float(swarm_instinct_level))
+		var from_node: int = helper["from_node"]
+		var to_node: int = helper["to_node"]
+		if from_node < 0 or to_node < 0 or from_node >= anchors.size() or to_node >= anchors.size():
+			_start_helper_travel(helper)
+			continue
+		var a := anchors[from_node]
+		var b := anchors[to_node]
+		var distance := maxf(a.distance_to(b), 1.0)
+		helper["rotation"] = (b - a).angle() - PI * 0.5
+		helper["progress"] = float(helper["progress"]) + (175.0 * (1.0 + 0.12 * float(swarm_instinct_level)) / distance) * delta
+		helper["position"] = a.lerp(b, minf(float(helper["progress"]), 1.0))
+		if float(helper["progress"]) >= 1.0:
+			helper["previous"] = from_node
+			helper["node"] = to_node
+			helper["position"] = anchors[to_node]
+			_start_helper_travel(helper)
+	helper_action_timer -= delta
+	if helper_action_timer <= 0.0:
+		_perform_helper_action()
+		helper_action_timer = maxf(2.5, 8.0 - float(helper_spiders.size()) * 0.55 - float(young_hunters_level) * 0.8 - float(spider_queen_level) * 1.4)
+
+
+func _start_helper_travel(helper: Dictionary) -> void:
+	var node: int = helper["node"]
+	if node < 0 or node >= anchors.size():
+		node = 0
+		helper["node"] = node
+	var neighbors := _neighbors(node)
+	if neighbors.is_empty():
+		helper["from_node"] = -1
+		helper["to_node"] = -1
+		return
+	var choices: Array[int] = []
+	for neighbor in neighbors:
+		if neighbor != int(helper["previous"]):
+			choices.append(neighbor)
+	if choices.is_empty():
+		choices = neighbors
+	helper["from_node"] = node
+	helper["to_node"] = choices[randi() % choices.size()]
+	helper["progress"] = 0.0
+
+
+func _perform_helper_action() -> void:
+	if young_hunters_level > 0:
+		for i in range(insects.size()):
+			if insects[i]["caught"] and not insects[i]["auto_collect"] and not insects[i]["boss"]:
+				var prey_position: Vector2 = insects[i]["position"]
+				_collect_insect(i, false)
+				capture_flashes.append({"position": prey_position, "life": 0.75})
+				status_label.text = "JUNGJÄGER – DIE BRUT WICKELT BEUTE EIN!"
+				break
+	if spider_queen_level > 0:
+		for i in range(insects.size()):
+			if insects[i]["caught"] and insects[i]["boss"]:
+				insects[i]["boss_hits"] = maxi(0, int(insects[i]["boss_hits"]) - 1)
+				if int(insects[i]["boss_hits"]) <= 0:
+					_collect_insect(i, false)
+					status_label.text = "KÖNIGINNENBISS – ABSCHLUSSBEUTE BESIEGT!"
+				else:
+					status_label.text = "KÖNIGINNENBISS – NOCH %d" % int(insects[i]["boss_hits"])
+				break
+	var repair_amount := float(helper_spiders.size()) * 2.0 + float(silk_menders_level) * 8.0
+	if repair_amount > 0.0:
+		_repair_weakest_thread(repair_amount)
 
 
 func _ensure_anchor(position: Vector2) -> int:
@@ -1262,6 +1373,22 @@ func _apply_upgrade_effect(upgrade_id: String) -> void:
 			emergency_reserve_used = false
 		"rich_cocoon":
 			boss_reward_multiplier += 0.5
+		"brood_nest":
+			brood_nest_level += 1
+			_sync_helper_spiders()
+		"silk_menders":
+			silk_menders_level += 1
+			_perform_helper_action()
+		"young_hunters":
+			young_hunters_level += 1
+			helper_action_timer = minf(helper_action_timer, 1.0)
+		"swarm_instinct":
+			swarm_instinct_level += 1
+			spider_speed *= 1.12
+			_sync_helper_spiders()
+		"spider_queen":
+			spider_queen_level = 1
+			_sync_helper_spiders()
 
 
 func _end_run() -> void:
@@ -1297,7 +1424,7 @@ func _update_hud() -> void:
 func _build_summary_text() -> String:
 	if upgrade_levels.is_empty():
 		return "BUILD: NOCH OFFEN"
-	var counts := {"FESTUNG": 0, "FALLE": 0, "JÄGERIN": 0, "ÖKONOMIE": 0}
+	var counts := {"FESTUNG": 0, "FALLE": 0, "JÄGERIN": 0, "ÖKONOMIE": 0, "BRUT": 0}
 	for upgrade in UpgradeDB.all():
 		var upgrade_level := int(upgrade_levels.get(upgrade["id"], 0))
 		if upgrade_level > 0:
@@ -1332,6 +1459,7 @@ func _draw() -> void:
 	_draw_capture_flashes()
 	_draw_preview()
 	if not upgrade_open:
+		_draw_helper_spiders()
 		_draw_spider(spider_position)
 
 
@@ -1465,14 +1593,30 @@ func _draw_spider(position: Vector2) -> void:
 	_draw_spider_sheet_frame(texture, spider_anim_frame, p, 0.27, spider_rotation, spider_visual_scale)
 
 
-func _draw_spider_sheet_frame(texture: Texture2D, frame: int, position: Vector2, scale: float, rotation: float, stretch: Vector2) -> void:
+func _draw_helper_spiders() -> void:
+	var helper_count := helper_spiders.size()
+	for i in range(helper_spiders.size()):
+		var helper := helper_spiders[i]
+		var position: Vector2 = helper["position"]
+		if helper_count > 1:
+			var formation_angle := TAU * float(i) / float(helper_count) + float(helper["rotation"])
+			var formation_radius := minf(30.0, 15.0 + float(helper_count) * 3.0)
+			position += Vector2.from_angle(formation_angle) * formation_radius
+		var pulse := 1.0 + sin(float(helper["anim_time"]) * 1.7 + float(i)) * 0.06
+		draw_circle(position + Vector2(0.0, 9.0), 25.0, Color(DARK_MOSS, 0.18))
+		draw_circle(position, 18.0 * pulse, Color(HONEY, 0.12))
+		var tint := Color(1.0, 0.82, 0.52, 1.0) if spider_queen_level <= 0 else Color(1.0, 0.9, 0.58, 1.0)
+		_draw_spider_sheet_frame(SPIDER_CRAWL_TEXTURE, floori(float(helper["anim_time"])) % 4, position, 0.115 * pulse, float(helper["rotation"]), Vector2.ONE, tint)
+
+
+func _draw_spider_sheet_frame(texture: Texture2D, frame: int, position: Vector2, scale: float, rotation: float, stretch: Vector2, modulate: Color = Color.WHITE) -> void:
 	var cell := texture.get_size() * 0.5
 	var column := frame % 2
 	var row := frame / 2
 	var source := Rect2(Vector2(column * cell.x, row * cell.y), cell)
 	var target := Rect2(-cell * 0.5, cell)
 	draw_set_transform(position, rotation, Vector2(scale * stretch.x, scale * stretch.y))
-	draw_texture_rect_region(texture, target, source)
+	draw_texture_rect_region(texture, target, source, modulate)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 

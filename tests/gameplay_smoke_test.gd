@@ -12,7 +12,7 @@ func _run() -> void:
 	await process_frame
 	var upgrade_db = load("res://scripts/upgrade_database.gd")
 	var all_upgrades: Array[Dictionary] = upgrade_db.all()
-	assert(all_upgrades.size() == 24)
+	assert(all_upgrades.size() == 29)
 	var icon_keys := {}
 	for upgrade in all_upgrades:
 		assert(upgrade["icon"] == upgrade["id"])
@@ -71,6 +71,26 @@ func _run() -> void:
 	assert(game.silk >= 35.0)
 	game._apply_upgrade_effect("rich_cocoon")
 	assert(game.boss_reward_multiplier > 1.0)
+	game._apply_upgrade_effect("brood_nest")
+	assert(game.helper_spiders.size() == 1)
+	var speed_before_swarm: float = game.spider_speed
+	game._apply_upgrade_effect("swarm_instinct")
+	assert(game.helper_spiders.size() == 2)
+	assert(game.spider_speed > speed_before_swarm)
+	game._apply_upgrade_effect("silk_menders")
+	game.edge_health[0] = 10.0
+	game._perform_helper_action()
+	assert(game.edge_health[0] > 10.0)
+	game._apply_upgrade_effect("young_hunters")
+	game.insects.clear()
+	game._spawn_insect()
+	game.insects[0]["caught"] = true
+	game.insects[0]["auto_collect"] = false
+	game.insects[0]["boss"] = false
+	game._perform_helper_action()
+	assert(game.insects.is_empty())
+	game._apply_upgrade_effect("spider_queen")
+	assert(game.helper_spiders.size() == 4)
 
 	game.insects.clear()
 	game._spawn_insect()

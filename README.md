@@ -16,7 +16,8 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Three visual insect tiers: fly, moth, and bee
 - Food, experience, multi-stage hunt levels, and three random upgrade choices
 - Illustrated Web-Deck level-up cards with staggered reveal and press feedback
-- Data-driven database with 24 upgrades, rarity, levels, prerequisites, and four builds
+- Data-driven database with 29 upgrades, rarity, levels, prerequisites, and five builds
+- Visible brood build with animated helper spiders, repairs, auto-wrapping, and queen attacks
 - Fortress, trap, hunter, and silk-economy synergies with real gameplay effects
 - Limited silk resource with distance-based thread costs and capture recovery
 - Permanent silk and XP progress bars with slower level pacing

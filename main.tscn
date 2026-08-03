@@ -945,7 +945,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.973, 0.961, 0.922, 0.84)
 theme_override_font_sizes/font_size = 20
-text = "24 PERKS   •   4 BUILD-PFADE   •   AKTIVE JAGD"
+text = "29 PERKS   •   5 BUILD-PFADE   •   AKTIVE JAGD"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -1019,7 +1019,7 @@ offset_right = 840.0
 offset_bottom = 1800.0
 theme_override_colors/font_color = Color(0.973, 0.961, 0.922, 0.46)
 theme_override_font_sizes/font_size = 18
-text = "VERSION 0.4.0-test.7"
+text = "VERSION 0.5.0-test.1"
 horizontal_alignment = 1
 
 [node name="HowToOverlay" type="ColorRect" parent="StartMenu"]

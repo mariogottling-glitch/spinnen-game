@@ -147,5 +147,35 @@ static func all() -> Array[Dictionary]:
 			"description": "Abschlussmotten geben erheblich mehr Nahrung, XP und Seide.",
 			"build": "ÖKONOMIE", "rarity": "rare", "max_level": 2, "weight": 3,
 			"icon": "rich_cocoon", "requires": {"recycler": 1, "vibration_sense": 1}
+		},
+		{
+			"id": "brood_nest", "title": "BRUTNEST", "value": "+1 HELFERSPINNE",
+			"description": "Eine sichtbare Jungspinne patrouilliert dein Netz und hilft bei kleinen Reparaturen.",
+			"build": "BRUT", "rarity": "common", "max_level": 3, "weight": 9,
+			"icon": "brood_nest", "requires": {}
+		},
+		{
+			"id": "silk_menders", "title": "FLICKENLÄUFER", "value": "+8 REPARATUR",
+			"description": "Die Brut repariert regelmäßig den schwächsten aktiven Faden.",
+			"build": "BRUT", "rarity": "uncommon", "max_level": 3, "weight": 6,
+			"icon": "silk_menders", "requires": {"brood_nest": 1}
+		},
+		{
+			"id": "young_hunters", "title": "JUNGJÄGER", "value": "AUTO-FANG ALLE 7 S",
+			"description": "Eine Helferspinne wickelt regelmäßig festgehaltene normale Beute ein.",
+			"build": "BRUT", "rarity": "uncommon", "max_level": 2, "weight": 5,
+			"icon": "young_hunters", "requires": {"brood_nest": 1}
+		},
+		{
+			"id": "swarm_instinct", "title": "SCHWARMTRIEB", "value": "+12 % TEMPO · +1 BRUT",
+			"description": "Der ganze Schwarm bewegt sich schneller und eine weitere Jungspinne schlüpft.",
+			"build": "BRUT", "rarity": "rare", "max_level": 2, "weight": 3,
+			"icon": "swarm_instinct", "requires": {"brood_nest": 2, "quick_legs": 1}
+		},
+		{
+			"id": "spider_queen", "title": "SPINNENKÖNIGIN", "value": "+2 BRUT · BOSS-BISSE",
+			"description": "Die Königin verstärkt alle Helfer; sie beißen nun auch gefangene Abschlussbeute.",
+			"build": "BRUT", "rarity": "rare", "max_level": 1, "weight": 2,
+			"icon": "spider_queen", "requires": {"brood_nest": 3, "silk_menders": 1, "young_hunters": 1}
 		}
 	]

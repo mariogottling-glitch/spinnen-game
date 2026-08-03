@@ -664,7 +664,7 @@ Reparieren. Ein großes passives Netz ist keine dauerhafte Gewinnstrategie mehr.
 
 # 24. Upgrade-Datenbank und Build-Pfade
 
-Der Prototyp besitzt aktuell 24 Upgrades in vier Build-Pfaden. Höhere Perks
+Der Prototyp besitzt aktuell 29 Upgrades in fünf Build-Pfaden. Höhere Perks
 werden erst sichtbar, wenn ihre Voraussetzungen erfüllt sind. Jede Auswahl zieht
 drei unterschiedliche Karten aus dem gerade freigeschalteten Pool.
 
@@ -678,7 +678,54 @@ drei unterschiedliche Karten aus dem gerade freigeschalteten Pool.
 - **Seidensprint (Jägerin):** Schnellere Beutesprünge reparieren den Landefaden.
 - **Notreserve (Ökonomie):** Bei fast leerer Seide öffnet sich einmal pro Jagdlevel eine Reserve.
 - **Prachtkokon (Ökonomie + Falle):** Abschlussmotten liefern mehr Nahrung, XP und Seide.
+- **Brutnest (Brut):** Pro Stufe schlüpft eine sichtbare Jungspinne, die das aktive Netz patrouilliert.
+- **Flickenläufer (Brut):** Die Helfer reparieren regelmäßig den schwächsten Faden.
+- **Jungjäger (Brut):** Eine Helferspinne wickelt in festen Abständen gefangene normale Beute ein.
+- **Schwarmtrieb (Brut + Jägerin):** Erhöht das Tempo der Hauptspinne und lässt weitere Brut schlüpfen.
+- **Spinnenkönigin (Brut-Kernperk):** Zwei zusätzliche Helfer; die Brut kann nun auch Abschlussbeute beißen.
 
 Die Mischvoraussetzungen von Kettenfang und Prachtkokon sind bewusst gesetzte
-Synergien. Sie belohnen Hybrid-Builds, ohne die klaren Identitäten der vier
-Hauptpfade aufzugeben.
+Synergien. Schwarmtrieb verbindet Brut und Bewegung. Die Spinnenkönigin verlangt
+hingegen eine bewusste Investition in Brutnest, Flickenläufer und Jungjäger. So
+entsteht ein eigener, sichtbarer Schwarm-Build statt eines rein numerischen Bonus.
+
+---
+
+# 25. Nächster Spannungsbaustein: aktive Jagdmomente
+
+Das Grundspiel soll nicht durch zufällige Strafen hektischer werden, sondern durch
+kurze, klar angekündigte Situationen, in denen Beobachtung, Timing und eine
+bewusste Entscheidung zählen. Die empfohlene Reihenfolge für den Ausbau ist:
+
+## 1. Bissfenster und Wespen-Miniboss
+
+- Eine gefangene Wespe ist nicht sofort besiegt, sondern besitzt zwei bis drei Bisspunkte.
+- Beim Anspringen wandert ein kurzer Timing-Ring auf ein goldenes Fenster zu.
+- Ein perfekter Biss betäubt die Wespe und gibt einen kleinen Seiden- oder XP-Bonus.
+- Ein zu früher oder später Biss lässt sie zappeln und beschädigt umliegende Fäden.
+- Dadurch bleibt Netzbau wichtig, aber der Fang verlangt zusätzlich Geschick.
+
+## 2. Angekündigte Jagdimpulse
+
+Alle 35 bis 55 Sekunden kann ein acht bis zwölf Sekunden langes Ereignis auftreten.
+Ein Richtungspfeil und eine kurze Vorwarnung geben dem Spieler Zeit zu reagieren.
+
+- **Windstoß:** belastet nur Fäden in einer angekündigten Schneise; gute Knoten und Reparaturen zahlen sich aus.
+- **Tautropfen:** macht einzelne Knoten kurz schwerer, erhöht dort aber Fangwert und seltene Beute.
+- **Vogelschatten:** zwingt die Spinne, sich rechtzeitig auf einen verstärkten oder bedeckten Netzbereich zu bewegen.
+
+Diese Ereignisse verändern Entscheidungen und sind keine bloßen Sichtfilter. Es
+gibt vorerst keinen Winter- oder Frostablauf.
+
+## 3. Jagdverträge als kontrollierter Randomizer
+
+Vor einem Level werden zwei zufällige Verträge angeboten; der Spieler wählt einen
+oder lehnt beide für eine normale Jagd ab. Beispiele:
+
+- Mehr Wespen, dafür 30 Prozent mehr seltene Perks.
+- Zerbrechlichere Seide, dafür doppelte Combo-XP.
+- Weniger Ankerpunkte, dafür startet die Jagd mit einer zusätzlichen Upgrade-Wahl.
+
+Der Zufall erzeugt Abwechslung, die Wahl erhält die Kontrolle. Später können Käfer
+(schwere Beute für verstärkte Kreuzungen) und Libellen (mehrere schnelle Anflüge)
+als weitere Minibosse folgen.
