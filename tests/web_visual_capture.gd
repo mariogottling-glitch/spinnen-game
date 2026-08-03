@@ -11,7 +11,7 @@ func _capture() -> void:
 	root.add_child(game)
 	await process_frame
 	game._start_game_from_menu()
-	await process_frame
+	await create_timer(0.55).timeout
 	RenderingServer.force_draw(false)
 	var contract_image := root.get_texture().get_image()
 	assert(contract_image.save_png("res://artifacts/contract-selection-current.png") == OK)

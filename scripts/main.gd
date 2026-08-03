@@ -11,7 +11,7 @@ const ORANGE := Color("#E86B45")
 const SKY := Color("#7DC7E8")
 const BERRY := Color("#9B6AA6")
 
-const BACKGROUND_TEXTURE: Texture2D = preload("res://assets/backgrounds/forest-morning-v1.png")
+const BACKGROUND_TEXTURE: Texture2D = preload("res://assets/backgrounds/forest-fadenschnitt-v1.png")
 const SPIDER_TEXTURE: Texture2D = preload("res://assets/sprites/spider-v2.png")
 const SPIDER_CRAWL_TEXTURE: Texture2D = preload("res://assets/sprites/spider-crawl-sheet-v1.png")
 const SPIDER_JUMP_TEXTURE: Texture2D = preload("res://assets/sprites/spider-jump-sheet-v1.png")
@@ -61,6 +61,7 @@ const UPGRADE_ICON_TEXTURES := {
 	"spider_queen": preload("res://assets/ui/perks/spider-queen.png")
 }
 const UpgradeDB = preload("res://scripts/upgrade_database.gd")
+const FadenschnittTheme = preload("res://scripts/fadenschnitt_theme.gd")
 const HUNT_CONTRACTS: Array[Dictionary] = [
 	{
 		"id": "glass_hunt", "title": "GLÄSERNE JAGD", "sigil": "◆",
@@ -293,6 +294,7 @@ var menu_transitioning := false
 
 
 func _ready() -> void:
+	FadenschnittTheme.apply(self)
 	upgrade_one.pressed.connect(_choose_upgrade.bind(0))
 	upgrade_two.pressed.connect(_choose_upgrade.bind(1))
 	upgrade_three.pressed.connect(_choose_upgrade.bind(2))
@@ -1047,13 +1049,14 @@ func _open_contract_selection() -> void:
 
 
 func _configure_contract_card(card: Button, contract: Dictionary) -> void:
-	(card.get_node("Sigil") as Label).text = contract["sigil"]
 	var title := card.get_node("Title") as Label
 	title.text = contract["title"]
-	title.add_theme_font_size_override("font_size", 24 if String(contract["title"]).length() > 15 else 28)
-	(card.get_node("Risk") as Label).text = "RISIKO\n%s" % contract["risk"]
-	(card.get_node("Reward") as Label).text = "BELOHNUNG\n%s" % contract["reward"]
-	(card.get_node("Special") as Label).text = "SPEZIALTIER: %s" % contract["special"]
+	title.add_theme_font_size_override("font_size", 35 if String(contract["title"]).length() > 15 else 40)
+	(card.get_node("Risk") as Label).text = String(contract["risk"]).to_upper()
+	(card.get_node("Reward") as Label).text = String(contract["reward"]).to_upper()
+	(card.get_node("Special") as Label).text = "%s  ·  ANTIPPEN" % contract["special"]
+	var portrait := card.get_node("Portrait") as TextureRect
+	portrait.texture = FadenschnittTheme.contract_portrait(String(contract.get("preferred", "beetle")))
 
 
 func _choose_contract(choice: int) -> void:

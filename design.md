@@ -85,29 +85,23 @@ Sessions:
 
 # 4. Art Direction
 
-## Gesamtstil
+## Gesamtstil: Fadenschnitt
 
-Modern
+**Fadenschnitt** ist die verbindliche visuelle Identität von Web Weaver.
 
-Minimalistisch
+- moderne 2D-Siebdruck- und Scherenschnittoptik
+- große, bewusst vereinfachte Silhouetten
+- leicht unperfekte Druckkanten statt glatter KI-Oberflächen
+- sparsame Rasterpunkte und minimale Farbversätze
+- zwei bis drei flache Papierebenen statt gemalter Tiefe
+- eine durchgehende Seidenlinie als wiederkehrendes Markenelement
 
-Illustrativ
+Die Optik ist illustrativ, organisch und hochwertig, aber weder realistisch noch
+ornamental. Sie darf charmant sein, ohne kindlich oder maskottchenhaft zu wirken.
 
-Organisch
-
-Lebendig
-
-Hochwertig
-
-Nicht realistisch.
-
-Nicht comichaft.
-
-Nicht kindisch.
-
-Nicht düster.
-
-Es soll aussehen wie ein Premium-Indiespiel.
+Ausgeschlossen sind fotorealistische Wälder, glänzende 3D-Renderings, gemaltes
+Fantasy-Gold, pseudo-mittelalterliche Rahmen, Lichtstrahlen, Bokeh und dekorative
+Details ohne spielerische Funktion.
 
 ---
 
@@ -115,17 +109,9 @@ Es soll aussehen wie ein Premium-Indiespiel.
 
 ## Grafik
 
-Monument Valley
-
-Mini Motorways
-
-Alto's Odyssey
-
-Badland
-
-Tiny Wings
-
-The Gardens Between
+Die Referenzen dienen nur für Klarheit, Rhythmus und mobile Lesbarkeit. Web Weaver
+kopiert keine fremde Formensprache. Maßgeblich sind das eigene Sechsfarbensystem,
+die Fadenschnitt-Silhouetten und die durchgehende Seidenlinie.
 
 ## Animation
 
@@ -139,71 +125,35 @@ Spiritfarer
 
 # 6. Farbwelt
 
-## Primärfarben
+## Verbindliche Sechsfarbenpalette
 
-Forest Green
+- **Tannenschwarz** `#102A24`: Hintergrund, maximale Tiefe
+- **Moos** `#315A45`: Flächen, Karten, Weltboden
+- **Flechte** `#A7C46A`: Fortschritt, positive Zustände, Belohnungen
+- **Seide** `#F2E8D5`: Text, Fäden, helle Karten
+- **Spinnenorange** `#F28C28`: Charakter, Primäraktion, Energie
+- **Warnkoralle** `#E3564A`: Risiko, Schaden, Gefahr
 
-#2F6B45
-
-Dark Moss
-
-#214233
-
-Leaf Green
-
-#6DAE5B
-
-Warm Cream
-
-#F8F5EB
-
-Honey
-
-#F4C556
-
-Orange
-
-#E86B45
-
-Sky Accent
-
-#7DC7E8
-
----
-
-# Sekundärfarben
-
-Pilzrot
-
-Beerenviolett
-
-Moosgrün
-
-Gold
-
-Tau-Blau
+Zusätzliche Farben sind für Produktionsassets nicht erlaubt. Transparenz und
+unterschiedliche Rasterdichten dürfen die sechs Grundfarben abstufen.
 
 ---
 
 # Farbphilosophie
 
-Keine extremen Kontraste.
-
-Sanfte Übergänge.
-
-Warme Stimmung.
-
-Natürliche Farben.
+Hoher Hell-Dunkel-Kontrast sorgt auf kleinen Displays für Lesbarkeit. Tiefe entsteht
+durch überlagerte Flächen, Raster und kleine versetzte Schatten – nicht durch
+Farbverläufe oder realistische Beleuchtung.
 
 ---
 
 # 7. Hintergrund
 
-Mehrere Ebenen.
+Der Hintergrund besteht aus wenigen großen, asymmetrischen Schnittformen.
 
 ## Ebene 1
 
-Unscharfe Blätter
+Tannenschwarze und moosgrüne Blattsilhouetten
 
 ## Ebene 2
 
@@ -449,79 +399,44 @@ Kein Wackeln
 
 # 16. UI Design
 
-Minimal.
+Minimal, kontrastreich und sofort lesbar.
 
-Viel Weißraum.
-
-Große Flächen.
-
-Keine verspielten Ornamente.
+- großzügige Abstände und klare Linksausrichtung
+- große flache Flächen mit leicht angeschnittenen oder kleinen Ecken
+- maximal zwei Schrifttypen: Barlow Condensed für Titel und Barlow für Fließtext
+- keine Verläufe, Glasflächen, Metallrahmen oder Fantasy-Ornamente
+- Warnkoralle ausschließlich für Risiken und Schaden
+- Flechte beziehungsweise Spinnenorange ausschließlich für Fortschritt und Aktion
 
 ---
 
 ## HUD
 
-Links oben
-
-❤️ Leben
-
-Rechts oben
-
-⭐ Punkte
-
-🕸 Netzqualität
-
-🌿 Biom
-
-Oben Mitte
-
-Wellenfortschritt
+Das HUD verwendet eine kompakte tannenschwarze Statusfläche mit einer
+spinnenorangen Unterkante. Fäden, Seide, Nahrung, XP, Netz-Integrität, Jagdziel,
+Build und aktiver Vertrag bleiben ohne Symboldekoration direkt lesbar.
 
 ---
 
 # 17. Upgrade Karten
 
-Große Karten
+Große Karten mit dunklem und hellem Wechselrhythmus, kleinen Ecken und versetztem
+Flächenschatten. Illustrationen werden durch die Fadenschnitt-Palette reduziert.
+Titel, Effektwert und ein kurzer Wirkungssatz bilden die feste Hierarchie.
 
-helle Oberfläche
-
-abgerundete Ecken
-
-leichter Schatten
-
-große Icons
-
-wenig Text
-
-Beispiele
-
-🕸 Fadenstärke
-
-🕷 Sprungweite
-
-✨ Klebrigkeit
-
-🌿 Tarnung
-
-💨 Geschwindigkeit
-
-🥚 Nachwuchs
+Einfarbige Build-Bänder am Kartenfuß ersetzen glänzende oder mehrfarbige Ribbons.
+Die drei Karten dürfen leicht versetzt sein, werden aber nicht ornamental gefächert.
 
 ---
 
 # 18. Buttons
 
-Groß
+Groß, flach und mit kleinen Ecken.
 
-Rund
-
-Leichter Verlauf
-
-Beim Tippen
-
-95%
-
-Bounce Animation
+Primäraktionen verwenden Seide als Fläche, Spinnenorange als Kontur und
+Tannenschwarz als Text. Sekundäraktionen bleiben tannenschwarz mit Seidenkontur.
+Beim Tippen wechselt die Fläche kurz auf Spinnenorange; ein kleiner Scale-Impuls
+ersetzt Glanz, Verlauf und Android-Fokusrahmen.
 
 ---
 
@@ -529,9 +444,9 @@ Bounce Animation
 
 Alle Icons
 
-Outline + Flat
+Flache Blockdruck-Silhouetten mit maximal drei Innenflächen
 
-keine 3D Icons
+keine 3D-, Glanz- oder realistisch gemalten Icons
 
 keine Emojis im Spiel
 
@@ -629,25 +544,15 @@ Godot AnimationPlayer
 
 # 24. KI Workflow
 
-Assets werden mit KI erstellt.
+KI darf Rohmaterial erzeugen, definiert aber niemals den Stil.
 
-Empfohlen
+Jeder Prompt muss Palette, Fadenschnitt-Medium, Perspektive, Silhouette und
+Ausschlussliste enthalten. Ein Asset wird danach freigestellt, auf sechs Farben
+reduziert, auf mobile Lesbarkeit geprüft und erst dann animiert oder eingebaut.
 
-ChatGPT Images
-
-Adobe Firefly
-
-Midjourney
-
-Figma
-
-Danach
-
-Vektorisieren
-
-Optimieren
-
-Animieren
+Generische Fantasy-Renderings, dekorative Details, Pseudo-Gold und nicht
+reproduzierbare Einzelstile werden verworfen – auch wenn das Einzelbild technisch
+hochwertig ist.
 
 ---
 
@@ -655,17 +560,12 @@ Animieren
 
 Jedes Objekt besitzt
 
-runde Formen
-
-wenige Details
-
-hohe Lesbarkeit
-
-natürliche Farben
-
-weiche Schatten
-
-leichte Animation
+- eine klare Silhouette
+- wenige große Innenformen
+- ausschließlich Farben der Sechsfarbenpalette
+- leicht unperfekte Druckkanten oder Raster
+- höchstens zwei flache Tiefenebenen
+- eine kurze, lesbare Animation
 
 Kein Asset darf statisch wirken.
 
@@ -713,7 +613,7 @@ Kein Platzhalter-Look.
 
 Keine generischen Mobile-Assets.
 
-Keine zusammengewürfelten KI-Stile.
+Keine zusammengewürfelten KI-Stile und kein erkennbarer „AI-Slop“-Look.
 
 Jedes neue Asset muss sich nahtlos in den bestehenden Stil einfügen.
 
@@ -750,12 +650,12 @@ Ein neues Asset gilt erst als fertig, wenn:
 
 # 31. Hauptmenü
 
-Der Einstieg wirkt wie die ruhige Titelseite eines hochwertigen Mobile-Games und
-verwendet dieselbe Waldwelt wie das Gameplay.
+Der Einstieg ist der deutlichste Markenanker des Spiels und verwendet dieselbe
+Fadenschnitt-Waldwelt wie das Gameplay.
 
 - Die animierbare Spinne ist der zentrale Charakteranker.
 - „Web Weaver“ bleibt als klarer, international verständlicher Spieltitel bestehen.
-- Der goldene Primärbutton startet die Jagd beziehungsweise setzt sie fort.
+- Der Seiden-Primärbutton mit oranger Kontur startet die Jagd beziehungsweise setzt sie fort.
 - Anleitung und Einstellungen sind visuell untergeordnet, aber gut erreichbar.
 - Das HUD und alle Spielobjekte werden im Hauptmenü vollständig ausgeblendet.
 - Über den Menüknopf im HUD kann eine laufende Runde unterbrechungsfrei verlassen
@@ -789,16 +689,43 @@ Kunstwerk; die Systeminformation erklärt es, ohne die Illustration zu verdecken
 
 # 33. Jagdverträge und Spezialbeute
 
-Die Vertragsauswahl verwendet drei große, leicht gefächerte Spielkarten wie die
-Upgrade-Auswahl, besitzt aber eine dunklere, gefährlichere Inszenierung. Jede Karte
-trennt Risiko, Belohnung und bevorzugtes Spezialtier klar voneinander. Ein großes
-geometrisches Siegel dient als schneller visueller Anker.
+Die Vertragsauswahl verwendet drei untereinander vernähte, horizontale
+Beute-Dossiers. Jede Zeile lässt sich mit dem Daumen vollständig antippen und
+trennt Titel, Risiko, Belohnung und Spezialtier ohne Erklärungstext. Warnkoralle
+kennzeichnet immer das Risiko, Flechte immer die Belohnung. Textglyphen und
+geometrische Siegel werden nicht als Ersatz für Tiergrafiken verwendet.
 
 Spezialtiere bleiben auch bei hoher Bewegung unterscheidbar:
 
-- Panzerkäfer: violette, schwere Schalenform und kräftiger Außenring.
-- Libelle: kühle Cyanfärbung und vier lange transparente Flügelspuren.
-- Glühwürmchen: warmer goldener Lichtkreis mit rhythmischem Puls.
+- Panzerkäfer: dunkle breite Schalenform, helle Geweihe und große Flechtenmuster.
+- Libelle: langes Segmentprofil und vier orangefarbene Blockdruckflügel.
+- Glühwürmchen: kompakte Flügelform und großer seidenheller Hinterleib.
 
 Name und Effektfarbe erscheinen nur dezent am Tier. Flugkorridor, Silhouette und
 Bewegungsmuster sollen die Identifikation im späteren Spiel weitgehend ohne Text ermöglichen.
+
+---
+
+# 34. Fadenschnitt-System und globale Anwendung
+
+Die Stilregeln gelten ohne Ausnahme für Hauptmenü, HUD, Vertragswahl,
+Upgrade-Auswahl, Anleitung, Einstellungen, Levelabschluss, Spielwelt, normale
+Beute, Spezialtiere und Bosse.
+
+## Wiederkehrende Signaturen
+
+- eine durchgehende helle Seidenlinie verbindet Flächen oder führt zum Fokus
+- orangefarbene Akzente gehören zur Spinne und zur aktiven Handlung
+- Karten wechseln zwischen Moos und Seide, statt drei beliebige Farben zu nutzen
+- asymmetrische Versätze erzeugen Rhythmus; Ornamente sind nicht nötig
+- Rasterpunkte liegen in der Illustration, nicht als Filter über lesbare Schrift
+
+## Produktionsprüfung
+
+Ein neuer Screen oder ein neues Asset wird abgelehnt, wenn er auch in einem
+beliebigen Fantasy-Mobilegame vorkommen könnte. Er muss ohne Logo an Palette,
+Schnittkante, Raster und Seidenlinie als Web Weaver erkennbar sein.
+
+Die freigegebene visuelle Referenz liegt unter
+`artifacts/fadenschnitt-style-target-v1.png`. Die ausführbaren Referenzstände für
+Menü, Verträge, Upgrades und Gameplay werden in `artifacts/` gepflegt.

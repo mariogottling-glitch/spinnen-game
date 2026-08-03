@@ -123,6 +123,7 @@ func _run() -> void:
 	assert(game.edge_health[0] > 10.0)
 	game._apply_upgrade_effect("young_hunters")
 	game.insects.clear()
+	game.hunt_goal = 9999
 	game._spawn_insect()
 	game.insects[0]["caught"] = true
 	game.insects[0]["auto_collect"] = false

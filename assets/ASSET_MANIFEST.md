@@ -136,3 +136,36 @@ skill's soft-matte and despill workflow.
 
 The gameplay renderer consumes the final alpha PNGs directly; no colorized reuse
 of the fly or bee textures remains for these six creatures.
+
+## Fadenschnitt art-direction pass
+
+The approved style target is archived at
+`artifacts/fadenschnitt-style-target-v1.png`. It defines the six-color
+screen-print and cut-paper identity used by the current interface pass.
+
+The built-in Imagegen tool produced two full-screen backgrounds with prompts that
+required flat cut-paper silhouettes, imperfect block-print edges, restrained
+halftone texture, deliberate empty UI space, and the exact Fadenschnitt palette.
+Both prompts explicitly excluded text, UI, photorealism, gradients, gold,
+cinematic lighting, fantasy ornaments, and glossy 3D rendering.
+
+- `backgrounds/main-menu-fadenschnitt-v1.png`: branded vertical forest framing
+  with the orange spider and a continuous silk line; resized to 1080 x 1920.
+- `backgrounds/forest-fadenschnitt-v1.png`: quiet top-down playfield with large
+  edge foliage and empty center; resized to 1080 x 1920.
+
+Three independent `stylized-concept` prompts created the contract portraits on a
+flat magenta key. Each prompt fixed the perspective, six-color palette, graphic
+anatomy, generous padding, block-print texture, and explicit no-text/no-frame/
+no-realism constraints. Local chroma removal used the imagegen helper's soft
+matte and despill workflow; all final files are RGBA with transparent corners.
+
+- `ui/contracts/beetle-fadenschnitt-v1.png`
+- `ui/contracts/dragonfly-fadenschnitt-v1.png`
+- `ui/contracts/firefly-fadenschnitt-v1.png`
+
+`ui/fadenschnitt-thread-overlay-v1.png` was generated separately as one continuous
+warm-silk stroke with three irregular loops on a flat magenta key. The prompt
+excluded cards, icons, text, foliage, lighting, realistic fibers and shadows.
+After chroma removal it was resized to 1080 x 1920 and is loaded as a raw PNG so
+the same signature line can sit above multiple dynamic Godot overlays.
