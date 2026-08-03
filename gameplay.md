@@ -450,9 +450,12 @@ Der Boss verändert die Umwelt.
 
 Jedes Level ist ein Jagdauftrag ohne harte Zeitbegrenzung. Zuerst muss eine
 sichtbare Nahrungsvorgabe erfüllt werden. Danach pausiert das normale Spawning
-und eine große Abschlussmotte erscheint.
+und ein Wespen-Miniboss erscheint.
 
-- Die Abschlussmotte benötigt mehrere aktive Fänge.
+- Die Wespe benötigt mehrere aktive Fänge und erfolgreiche Bisse.
+- Nach dem Anspringen läuft ein kurzer Timingzeiger über einen Ring.
+- Ein Treffer im goldenen Fenster verursacht zusätzlichen Schaden und gibt XP sowie Seide.
+- Ein verpasster Biss beschädigt den Fangfaden; zwischen den Fängen greift die Wespe weitere Fäden im Sturzflug an.
 - Jeder Befreiungsversuch belastet das Netz stark.
 - Verpasst der Spieler sie, fliegt sie erneut an und verhindert keinen Fortschritt.
 - Der seltene Giftbiss reduziert die benötigten Angriffe.
@@ -677,7 +680,7 @@ drei unterschiedliche Karten aus dem gerade freigeschalteten Pool.
 - **Jägerblick (Jägerin):** Aktiv angesprungene Beute liefert mehr Nahrung und XP.
 - **Seidensprint (Jägerin):** Schnellere Beutesprünge reparieren den Landefaden.
 - **Notreserve (Ökonomie):** Bei fast leerer Seide öffnet sich einmal pro Jagdlevel eine Reserve.
-- **Prachtkokon (Ökonomie + Falle):** Abschlussmotten liefern mehr Nahrung, XP und Seide.
+- **Prachtkokon (Ökonomie + Falle):** Abschlussbeute liefert mehr Nahrung, XP und Seide.
 - **Brutnest (Brut):** Pro Stufe schlüpft eine sichtbare Jungspinne, die das aktive Netz patrouilliert.
 - **Flickenläufer (Brut):** Die Helfer reparieren regelmäßig den schwächsten Faden.
 - **Jungjäger (Brut):** Eine Helferspinne wickelt in festen Abständen gefangene normale Beute ein.
@@ -697,9 +700,9 @@ Das Grundspiel soll nicht durch zufällige Strafen hektischer werden, sondern du
 kurze, klar angekündigte Situationen, in denen Beobachtung, Timing und eine
 bewusste Entscheidung zählen. Die empfohlene Reihenfolge für den Ausbau ist:
 
-## 1. Bissfenster und Wespen-Miniboss
+## 1. Bissfenster und Wespen-Miniboss (umgesetzt)
 
-- Eine gefangene Wespe ist nicht sofort besiegt, sondern besitzt zwei bis drei Bisspunkte.
+- Eine gefangene Wespe ist nicht sofort besiegt, sondern besitzt mehrere Bisspunkte.
 - Beim Anspringen wandert ein kurzer Timing-Ring auf ein goldenes Fenster zu.
 - Ein perfekter Biss betäubt die Wespe und gibt einen kleinen Seiden- oder XP-Bonus.
 - Ein zu früher oder später Biss lässt sie zappeln und beschädigt umliegende Fäden.

@@ -144,7 +144,7 @@ static func all() -> Array[Dictionary]:
 		},
 		{
 			"id": "rich_cocoon", "title": "PRACHTKOKON", "value": "+50 % BOSS-BEUTE",
-			"description": "Abschlussmotten geben erheblich mehr Nahrung, XP und Seide.",
+			"description": "Abschlussbeute gibt erheblich mehr Nahrung, XP und Seide.",
 			"build": "ÖKONOMIE", "rarity": "rare", "max_level": 2, "weight": 3,
 			"icon": "rich_cocoon", "requires": {"recycler": 1, "vibration_sense": 1}
 		},

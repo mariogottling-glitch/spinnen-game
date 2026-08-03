@@ -22,7 +22,7 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Limited silk resource with distance-based thread costs and capture recovery
 - Permanent silk and XP progress bars with slower level pacing
 - Thread health, aging, wind damage, and global web integrity
-- Food objectives followed by a multi-hit boss moth that completes each level
+- Food objectives followed by a multi-hit wasp miniboss with an active timing-based bite duel
 - Increasing hunt targets while the web and chosen build persist between levels
 - Run restart after complete web collapse
 - AI-generated forest, spider, insects, and spider animation sheets based on `design.md`
@@ -53,7 +53,7 @@ build must keep the package ID `com.mariogottling.webweaver`, use a higher versi
 code, and be signed with the same keystore so Android recognizes it as an update.
 
 During desktop development, press `U` to open the upgrade selection immediately.
-Press `B` to summon the current level's boss moth immediately for testing.
+Press `B` to summon the current level's wasp miniboss immediately for testing.
 
 ## Next vertical-slice milestones
 

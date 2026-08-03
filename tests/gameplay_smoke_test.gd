@@ -117,7 +117,34 @@ func _run() -> void:
 	assert(game.boss_active)
 	assert(game.insects.size() == 1)
 	assert(game.insects[0]["boss"])
-	game._collect_insect(0)
+	assert(game.insects[0]["kind"] == "wasp")
+	game.insects[0]["caught"] = true
+	game.insects[0]["edge"] = 0
+	game.insects[0]["phase"] = 0.5
+	var boss_hits_before_miss: int = game.insects[0]["boss_hits"]
+	var edge_health_before_miss: float = game.edge_health[0]
+	game._begin_bite_timing(game.insects[0]["id"])
+	assert(game.bite_active)
+	game.bite_progress = 0.0
+	game.bite_target_center = 0.7
+	game._resolve_bite_timing()
+	assert(game.insects[0]["boss_hits"] == boss_hits_before_miss)
+	assert(game.edge_health[0] < edge_health_before_miss)
+	game.insects[0]["caught"] = true
+	game.insects[0]["edge"] = 0
+	game.insects[0]["phase"] = 0.5
+	var xp_before_perfect: int = game.xp
+	game._begin_bite_timing(game.insects[0]["id"])
+	game.bite_progress = game.bite_target_center
+	game._resolve_bite_timing()
+	assert(game.xp == xp_before_perfect + 2)
+	assert(game.insects[0]["boss_hits"] == boss_hits_before_miss - game.boss_damage - 1)
+	game.insects[0]["caught"] = true
+	game.insects[0]["edge"] = 0
+	game.insects[0]["phase"] = 0.5
+	game._begin_bite_timing(game.insects[0]["id"])
+	game.bite_progress = game.bite_target_center
+	game._resolve_bite_timing()
 	assert(game.level_complete)
 	assert(game.level_complete_overlay.visible)
 
