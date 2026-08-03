@@ -45,8 +45,9 @@ The current installable APK is published as a GitHub Release:
 
 `https://github.com/mariogottling-glitch/spinnen-game/releases/latest/download/web-weaver-android.apk`
 
-The `UPDATE` button in the main menu opens this stable latest-download URL. Android
-then asks the player to confirm the downloaded APK update. Every published test
+The `UPDATE` button in the main menu opens the latest GitHub Release page, where
+the current APK can be downloaded without a stale file redirect. Android then
+asks the player to confirm the downloaded APK update. Every published test
 build must keep the package ID `com.mariogottling.webweaver`, use a higher version
 code, and be signed with the same keystore so Android recognizes it as an update.
 

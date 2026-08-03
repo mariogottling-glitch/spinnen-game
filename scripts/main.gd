@@ -1,7 +1,7 @@
 extends Node2D
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
-const ANDROID_UPDATE_URL := "https://github.com/mariogottling-glitch/spinnen-game/releases/latest/download/web-weaver-android.apk"
+const ANDROID_UPDATE_URL := "https://github.com/mariogottling-glitch/spinnen-game/releases/latest"
 const FOREST := Color("#2F6B45")
 const DARK_MOSS := Color("#214233")
 const LEAF := Color("#6DAE5B")
