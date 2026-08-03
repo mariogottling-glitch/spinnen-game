@@ -2,6 +2,14 @@ extends Node2D
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const ANDROID_UPDATE_URL := "https://github.com/mariogottling-glitch/spinnen-game/releases/latest/download/web-weaver-android.apk?download=1"
+const MENU_PLAY_TOUCH_RECT := Rect2(40.0, 1060.0, 1000.0, 440.0)
+const MENU_HOW_TO_TOUCH_RECT := Rect2(70.0, 1450.0, 470.0, 440.0)
+const MENU_SETTINGS_TOUCH_RECT := Rect2(540.0, 1450.0, 470.0, 440.0)
+const MENU_UPDATE_TOUCH_RECT := Rect2(730.0, 20.0, 350.0, 180.0)
+const HOW_TO_BACK_TOUCH_RECT := Rect2(170.0, 1330.0, 740.0, 220.0)
+const SETTINGS_MOTION_TOUCH_RECT := Rect2(140.0, 750.0, 800.0, 230.0)
+const SETTINGS_RESET_TOUCH_RECT := Rect2(140.0, 1030.0, 800.0, 210.0)
+const SETTINGS_BACK_TOUCH_RECT := Rect2(160.0, 1200.0, 760.0, 240.0)
 const FOREST := Color("#2F6B45")
 const DARK_MOSS := Color("#214233")
 const LEAF := Color("#6DAE5B")
@@ -143,6 +151,7 @@ var menu_open := true
 var run_started := false
 var reduced_motion := false
 var menu_transitioning := false
+var last_native_touch_msec := -1000
 
 @onready var integrity_label: Label = $HUD/Integrity
 @onready var hud: CanvasLayer = $HUD
@@ -235,47 +244,72 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not menu_open or not event is InputEventScreenTouch or not event.pressed:
+	if not menu_open:
 		return
-	if _handle_menu_touch(event.position):
+	var screen_position := Vector2.ZERO
+	if event is InputEventScreenTouch:
+		if not event.pressed:
+			return
+		last_native_touch_msec = Time.get_ticks_msec()
+		screen_position = event.position
+	elif event is InputEventMouseButton:
+		if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if Time.get_ticks_msec() - last_native_touch_msec < 350:
+			return
+		screen_position = event.position
+	else:
+		return
+	if _handle_menu_touch(screen_position):
 		get_viewport().set_input_as_handled()
 
 
 func _handle_menu_touch(screen_position: Vector2) -> bool:
 	if how_to_overlay.visible:
-		if _control_contains_screen_point(how_to_back_button, screen_position):
+		if _screen_point_hits_rect(screen_position, HOW_TO_BACK_TOUCH_RECT):
 			_close_menu_panel()
 			return true
 		return false
 	if settings_overlay.visible:
-		if _control_contains_screen_point(motion_button, screen_position):
+		if _screen_point_hits_rect(screen_position, SETTINGS_MOTION_TOUCH_RECT):
 			_toggle_reduced_motion()
 			return true
-		if _control_contains_screen_point(reset_button, screen_position):
+		if _screen_point_hits_rect(screen_position, SETTINGS_RESET_TOUCH_RECT):
 			_prepare_new_run()
 			return true
-		if _control_contains_screen_point(settings_back_button, screen_position):
+		if _screen_point_hits_rect(screen_position, SETTINGS_BACK_TOUCH_RECT):
 			_close_menu_panel()
 			return true
 		return false
-	if _control_contains_screen_point(play_button, screen_position):
+	if _screen_point_hits_rect(screen_position, MENU_UPDATE_TOUCH_RECT):
+		_open_android_update()
+		return true
+	if _screen_point_hits_rect(screen_position, MENU_PLAY_TOUCH_RECT):
 		_start_game_from_menu()
 		return true
-	if _control_contains_screen_point(how_to_button, screen_position):
+	if _screen_point_hits_rect(screen_position, MENU_HOW_TO_TOUCH_RECT):
 		_show_how_to()
 		return true
-	if _control_contains_screen_point(settings_button, screen_position):
+	if _screen_point_hits_rect(screen_position, MENU_SETTINGS_TOUCH_RECT):
 		_show_settings()
-		return true
-	if _control_contains_screen_point(update_button, screen_position):
-		_open_android_update()
 		return true
 	return false
 
 
-func _control_contains_screen_point(control: Control, screen_position: Vector2) -> bool:
-	var local_position := control.get_global_transform_with_canvas().affine_inverse() * screen_position
-	return Rect2(Vector2.ZERO, control.size).has_point(local_position)
+func _screen_point_hits_rect(screen_position: Vector2, design_rect: Rect2) -> bool:
+	if design_rect.has_point(screen_position):
+		return true
+	var viewport_size := get_viewport().get_visible_rect().size
+	if viewport_size.x > 0.0 and viewport_size.y > 0.0:
+		var viewport_mapped := screen_position / viewport_size * DESIGN_SIZE
+		if design_rect.has_point(viewport_mapped):
+			return true
+	var window_size := Vector2(DisplayServer.window_get_size())
+	if window_size.x > 0.0 and window_size.y > 0.0:
+		var window_mapped := screen_position / window_size * DESIGN_SIZE
+		if design_rect.has_point(window_mapped):
+			return true
+	return false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -364,20 +398,6 @@ func _start_game_from_menu() -> void:
 		run_started = true
 	play_button.text = "WEITERSPIELEN"
 	_close_menu_panel()
-	if reduced_motion:
-		start_menu.visible = false
-		menu_open = false
-		hud.visible = true
-		menu_button.visible = true
-		return
-	menu_transitioning = true
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(menu_card, "scale", Vector2(0.96, 0.96), 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(menu_card, "modulate", Color(1.0, 1.0, 1.0, 0.0), 0.18)
-	tween.tween_property(menu_hero, "modulate", Color(1.0, 1.0, 1.0, 0.0), 0.16)
-	tween.tween_property(menu_title, "modulate", Color(1.0, 1.0, 1.0, 0.0), 0.16)
-	await tween.finished
 	start_menu.visible = false
 	menu_open = false
 	menu_transitioning = false
