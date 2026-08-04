@@ -126,7 +126,7 @@ static func _apply_start_menu(root: Node) -> void:
 	version.size = Vector2(600, 40)
 	version.add_theme_font_override("font", DISPLAY_FONT)
 	version.add_theme_color_override("font_color", Color(SILK, 0.56))
-	version.text = "VERSION 0.12.0-test.2  ·  FADENSCHNITT"
+	version.text = "VERSION 0.12.0-test.3  ·  FADENSCHNITT"
 
 
 static func _style_menu_button(button: Button, position: Vector2, size: Vector2, primary: bool) -> void:

@@ -1461,7 +1461,7 @@ offset_right = 840.0
 offset_bottom = 1800.0
 theme_override_colors/font_color = Color(0.973, 0.961, 0.922, 0.46)
 theme_override_font_sizes/font_size = 18
-text = "VERSION 0.12.0-test.2  ·  FADENSCHNITT"
+text = "VERSION 0.12.0-test.3  ·  FADENSCHNITT"
 horizontal_alignment = 1
 
 [node name="HowToOverlay" type="ColorRect" parent="StartMenu"]
