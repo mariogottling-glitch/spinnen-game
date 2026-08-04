@@ -2311,7 +2311,7 @@ func _update_tutorial_banner() -> void:
 		1:
 			tutorial_label.text = "2/4  BAUE EIN DREIECK ALS FANGTASCHE"
 		2:
-			tutorial_label.text = "3/4  GESTRICHELTE LINIE = FLUGBAHN · MIT FADEN KREUZEN"
+			tutorial_label.text = "3/4  TIERE FLIEGEN VOM RAND INS NETZ"
 		3:
 			tutorial_label.text = "4/4  RING AM TIER = FLUCHTZEIT · TIER ANTIPPEN"
 
@@ -2351,7 +2351,6 @@ func _draw() -> void:
 	_draw_anchors()
 	_draw_web()
 	_draw_web_glyphs()
-	_draw_flight_warnings()
 	_draw_insects()
 	_draw_capture_flashes()
 	_draw_preview()
@@ -2431,40 +2430,6 @@ func _draw_web_glyphs() -> void:
 			draw_circle(position, 20.0 + pulse * 3.0, Color(HONEY, 0.055 + pulse * 0.035))
 			draw_arc(position, 23.0 + pulse * 3.0, 0.0, TAU, 20, Color(HONEY, 0.46), 3.0, true)
 			draw_circle(position, 5.0, Color(HONEY, 0.82))
-
-
-func _draw_flight_warnings() -> void:
-	for warning in flight_warnings:
-		var spec: Dictionary = warning["spec"]
-		var duration: float = maxf(float(warning["duration"]), 0.01)
-		var remaining: float = clampf(float(warning["timer"]) / duration, 0.0, 1.0)
-		var blink := 0.5 + sin(elapsed_time * 12.0) * 0.5
-		var warning_color := Color(CREAM, 0.34 + blink * 0.2)
-		match String(spec["kind"]):
-			"fly": warning_color = Color(SKY, 0.38 + blink * 0.24)
-			"moth": warning_color = Color(HONEY, 0.4 + blink * 0.25)
-			"bee": warning_color = Color(ORANGE, 0.46 + blink * 0.28)
-			"beetle": warning_color = Color(BERRY, 0.5 + blink * 0.28)
-			"dragonfly": warning_color = Color(SKY, 0.58 + blink * 0.3)
-			"firefly": warning_color = Color(HONEY, 0.62 + blink * 0.3)
-		warning_color.a *= 0.72
-		var y: float = spec["y"]
-		var from_left: bool = spec["from_left"]
-		var tip := Vector2(74.0 if from_left else 1006.0, y)
-		var direction := 1.0 if from_left else -1.0
-		var lane_start := Vector2(54.0 if from_left else 1026.0, y)
-		var lane_end := lane_start + Vector2(470.0 * direction, 0.0)
-		draw_dashed_line(lane_start, lane_end, warning_color, 2.0, 30.0, true)
-		var arrow := PackedVector2Array([
-			tip + Vector2(22.0 * direction, 0.0),
-			tip + Vector2(-7.0 * direction, -15.0),
-			tip + Vector2(-7.0 * direction, 15.0)
-		])
-		draw_colored_polygon(arrow, warning_color)
-		var countdown_center := tip + Vector2(46.0 * direction, 0.0)
-		draw_arc(countdown_center, 22.0, -PI * 0.5, -PI * 0.5 + TAU * (1.0 - remaining), 28, warning_color, 5.0, true)
-		var label_position := tip + Vector2(82.0 * direction - (65.0 if not from_left else 0.0), -12.0)
-		draw_string(FADENSCHNITT_DISPLAY_FONT, label_position, "ANFLUG", HORIZONTAL_ALIGNMENT_LEFT, 78.0, 18, warning_color)
 
 
 func _draw_thread_texture(texture: Texture2D, a: Vector2, b: Vector2, height: float, modulate: Color) -> void:

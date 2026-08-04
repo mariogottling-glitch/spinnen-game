@@ -699,8 +699,8 @@ So bleibt der Roguelite-Zufall bestehen, während ein geplanter Build realistisc
 
 - In Jagdlevel 1 und 2 sind höchstens zwei aktiv zu sichernde Beutetiere
   gleichzeitig unterwegs. Spätere Level erlauben höchstens drei.
-- Flugwarnungen werden auf vier Gesamthinweise begrenzt und nur noch als kurze,
-  beschriftete Einflugspur am Bildschirmrand gezeichnet.
+- Anflüge werden intern zeitversetzt vorbereitet, aber nicht mehr mit Linien,
+  Pfeilen oder Countdown-Kreisen über der Spielfläche dargestellt.
 - Netz-Zupfen lockt zwei statt drei wertvolle Tiere und ist gesperrt, solange
   bereits aktive Beute gesichert werden muss.
 - Ruhige Netze erzeugen Anflüge langsamer; Vibration bleibt der bewusst gewählte
@@ -711,8 +711,9 @@ So bleibt der Roguelite-Zufall bestehen, während ein geplanter Build realistisc
   Haltbarkeitspunkte pro Sekunde.
 - Seide regeneriert sich langsam passiv, besonders wenn gerade keine aktive
   Beute auf dem Netz liegt.
-- Die Einführung erklärt Flugbahn und Fluchtring getrennt. Sie verschwindet
-  spätestens beim Wechsel in Jagdlevel 2.
+- Die Einführung erklärt nur noch, dass Tiere vom Bildschirmrand in das Netz
+  fliegen, und danach den Fluchtring direkt am Tier. Sie verschwindet spätestens
+  beim Wechsel in Jagdlevel 2.
 
 ## Neue freischaltbare Perks
 
