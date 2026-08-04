@@ -850,3 +850,14 @@ Das erste Jagdziel liegt bei 36 Nahrung und soll inklusive Miniboss ungefähr 90
 Der primäre Prototyp ersetzt automatisches Zielantippen durch einen Schleudersprung: Die Spinne wird gehalten, entgegen der gewünschten Flugrichtung gezogen und beim Loslassen katapultiert. Umliegende Äste sind feste Landepunkte. Auch vorhandene Fäden können als Landeflächen dienen. Zwischen Absprung und erfolgreicher Landung entsteht automatisch ein neuer Netzfaden.
 
 Beute wird nicht mehr durch einen Tap eingesammelt. Nur ein direkter Treffer der fliegenden Spinne zählt als Fang. Das Netz bremst vorbeifliegende Tiere und schafft neue Abschusswinkel, fängt aber nichts selbstständig. Hunger sinkt permanent und wird durch Flugfänge aufgefüllt. Jeder Sprung kostet Seide; ein Fehlsprung verbraucht zusätzlich Rettungsseide und setzt die Kombo zurück. Ohne ausreichende Rettungsseide stürzt die Spinne ab. Ziel des Prototyps ist es, 90 Sekunden zu überleben und durch sichere Landungen, Mehrfachtreffer und immer riskantere Fluglinien eine hohe Kombo aufzubauen.
+
+## Fadenflug 0.2 – Timing, Survival und Beutelesen
+
+- Die Spinne krabbelt automatisch auf ihrem aktuellen Faden. Der Absprungpunkt ist damit eine Timing-Entscheidung und kein statischer Geschützturm.
+- Es gibt nur einen temporären Startfaden. Nach drei sicheren Landungen verschwindet er; danach trägt ausschließlich das selbst gebaute Netz.
+- Die starke Zielzeitlupe hält eine Sekunde. Danach kehrt die Welt stufenweise auf Normaltempo zurück. Langes Zielen erhöht die Seidenkosten, nach 3,2 Sekunden wird automatisch gestartet.
+- Rettungsfäden werden mit jedem aufeinanderfolgenden Fehlsprung teurer. Sichere Landungen bauen diesen Druck wieder langsam ab.
+- Beute erscheint in lesbaren Wellen statt als gleichförmiger Zufallsstrom. Fliegen bilden frühe Dreierlinien, später wechseln Gegenläufe und Mischwellen.
+- Fliegen zählen bei jedem direkten Treffer. Motten benötigen Tempo. Panzerkäfer werden von hinten oder nach einem Abpraller überwunden. Wespen bestrafen frontale Zusammenstöße. Libellen wechseln während langen Zielens einmal die Richtung.
+- Ohne aktive Fänge reicht der Hunger nicht für die vollen 90 Sekunden. Kleine Fliegen bleiben die verlässliche Grundversorgung, riskante Beute liefert deutlich mehr Nahrung und Seide.
+- Selbst gebaute Fäden altern langsam und Wespen können sie zusätzlich beschädigen. Das Netz bleibt Infrastruktur, ersetzt aber niemals den aktiven Flugfang.

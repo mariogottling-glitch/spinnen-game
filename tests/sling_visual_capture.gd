@@ -11,12 +11,13 @@ func _capture() -> void:
 	root.add_child(game)
 	await process_frame
 	game.elapsed = 36.0
-	game._spawn_insect()
-	game._spawn_insect()
+	game._spawn_insect_kind("dragonfly", 720.0, false)
+	game._spawn_insect_kind("beetle", 1260.0, true)
 	game.insects[0]["position"] = Vector2(720, 720)
 	game.insects[1]["position"] = Vector2(330, 1260)
 	game._begin_aim(game.spider_position)
 	game._update_aim(game.spider_position + Vector2(-210, 105))
+	game.aim_hold_time = 1.55
 	game._update_hud()
 	game.queue_redraw()
 	await create_timer(0.35).timeout

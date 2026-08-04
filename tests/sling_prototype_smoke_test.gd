@@ -11,8 +11,11 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	assert(not game.airborne)
-	assert(game.threads.size() == 3)
+	assert(game.threads.size() == 1)
 	assert(game.hunger > 99.0)
+	var crawl_start: Vector2 = game.spider_position
+	game._update_ground_movement(0.25)
+	assert(game.spider_position.distance_to(crawl_start) > 20.0)
 	var silk_before: float = game.silk
 	game._begin_aim(game.spider_position)
 	game._update_aim(game.spider_position + Vector2(-180.0, 90.0))
@@ -33,13 +36,27 @@ func _run() -> void:
 	game.insects.append({
 		"id": 99, "kind": "fly", "position": game.spider_position,
 		"velocity": Vector2.ZERO, "radius": 26.0, "reward": 1,
-		"food": 9.0, "silk": 5.0, "phase": 0.0, "hit_threads": {}
+		"food": 9.0, "silk": 5.0, "phase": 0.0, "hit_threads": {},
+		"hit_cooldown": 0.0, "dodged_this_aim": false
 	})
 	game.hunger = 50.0
 	game._collect_insect(0)
 	assert(game.score > 0)
 	assert(game.combo == 1)
 	assert(game.hunger > 50.0)
+	var cheap_launch: float = game._launch_cost(180.0, 0.5)
+	var delayed_launch: float = game._launch_cost(180.0, 2.5)
+	assert(delayed_launch > cheap_launch)
+	game._queue_wave()
+	assert(not game.spawn_queue.is_empty())
+	game._spawn_insect_kind("moth", 800.0, true)
+	var moth_index: int = game.insects.size() - 1
+	game.spider_velocity = Vector2(300.0, 0.0)
+	assert(not game._try_hit_insect(moth_index))
+	assert(game.insects.size() > moth_index)
+	game.spider_velocity = Vector2(700.0, 0.0)
+	game.insects[moth_index]["hit_cooldown"] = 0.0
+	assert(game._try_hit_insect(moth_index))
 	game._finish_game(true, "TEST")
 	assert(game.game_finished)
 	assert(game.result_overlay.visible)

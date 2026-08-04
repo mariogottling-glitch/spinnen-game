@@ -798,3 +798,9 @@ Der neue Primärmodus zeigt die Spinne als physisches Geschoss im eigenen Netz. 
 Astpunkte sind keine aufgesetzten UI-Schaltflächen. Sie liegen in der Randvegetation und erscheinen als kleine Seidenknoten mit einem zurückhaltenden flechtengrünen Ring. Das Netz ist funktionale Levelgeometrie: feste Startfäden sind blasser, selbst gebaute Flugfäden heller und stärker. Beute erhält keine permanenten Zielpfeile. Verlangsamung am Netz, Flugtreffer, sichere Landung und Rettungsfaden werden ausschließlich über kurze Farbimpulse in Orange, Himmelblau, Flechtengrün oder Koralle kommuniziert.
 
 Das HUD priorisiert nur vier Survivalwerte: verbleibende Zeit, Hunger, Seide und Kombo. Alle anderen Informationen erscheinen situativ. Ziel ist ein körperliches, schnelles Spielgefühl aus Spannen, Loslassen, Treffen und Landen – nicht das Verwalten abstrakter Netzpunkte.
+
+Die Spinne bewegt sich auf dem aktuellen Faden ständig weiter. Beim Zielen ist die volle Zeitlupe auf die erste Sekunde begrenzt; ein korallfarbener Druckring zeigt anschließend die verbleibende Zeit bis zum automatischen Abschuss. Die Flugvorschau endet nach acht Punkten und beschreibt bewusst nur den ersten Teil der Parabel.
+
+Zu Beginn liegt genau ein blasser, horizontaler Startfaden in der Mitte. Er verschwindet nach drei sicheren Landungen. Astknoten zeigen ihren grünen Außenring nur während des Einstiegs oder beim aktiven Zielen. Im normalen Flug bleiben sie als kleine, in die Vegetation eingebettete Seidenknoten sichtbar.
+
+Beutetypen werden primär über Silhouette, Tempo und Bewegungsregel unterschieden: Fliegen ruhig und klein, Motten weich pendelnd, Panzerkäfer schwer und langsam, Wespen aggressiv frontal und Libellen schnell mit einem klaren Ausweichknick. Es gibt weiterhin keine Flugkorridore, Zielpfeile oder dauerhaften Erklärtexte auf der Spielfläche.

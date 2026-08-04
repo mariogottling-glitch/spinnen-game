@@ -60,6 +60,7 @@ text = "SEIDE  100"
 horizontal_alignment = 1
 
 [node name="Score" type="Label" parent="HUD"]
+visible = false
 offset_left = 440.0
 offset_top = 109.0
 offset_right = 740.0

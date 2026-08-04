@@ -7,8 +7,10 @@ const GRAVITY := 330.0
 const MAX_PULL := 265.0
 const MIN_PULL := 34.0
 const LAUNCH_SCALE := 4.35
-const RESCUE_COST := 18.0
 const SPIDER_RADIUS := 34.0
+const CRAWL_SPEED := 105.0
+const AIM_SLOW_TIME := 1.0
+const AUTO_LAUNCH_TIME := 3.2
 
 const PINE := Color("#102A24")
 const MOSS := Color("#315A45")
@@ -23,6 +25,8 @@ const SPIDER: Texture2D = preload("res://assets/sprites/spider-fadenschnitt-v1.p
 const FLY: Texture2D = preload("res://assets/sprites/fly-fadenschnitt-v1.png")
 const MOTH: Texture2D = preload("res://assets/sprites/moth-fadenschnitt-v1.png")
 const WASP: Texture2D = preload("res://assets/sprites/wasp-fadenschnitt-v1.png")
+const BEETLE: Texture2D = preload("res://assets/ui/contracts/beetle-fadenschnitt-v1.png")
+const DRAGONFLY: Texture2D = preload("res://assets/ui/contracts/dragonfly-fadenschnitt-v1.png")
 const THREAD: Texture2D = preload("res://assets/web/thread-natural-v1.png")
 const KNOT: Texture2D = preload("res://assets/web/thread-knot-v1.png")
 const DISPLAY_FONT: Font = preload("res://assets/fonts/BarlowCondensed-SemiBold.ttf")
@@ -44,7 +48,16 @@ var aiming := false
 var aim_pointer := Vector2.ZERO
 var flight_time := 0.0
 var aim_cost := 0.0
+var aim_hold_time := 0.0
 var air_catches := 0
+var bounces_this_flight := 0
+var support_thread := 0
+var support_t := 0.5
+var support_direction := 1.0
+var launch_support_thread := 0
+var launch_support_t := 0.5
+var successful_landings := 0
+var rescue_count := 0
 
 var hunger := 100.0
 var silk := 100.0
@@ -53,6 +66,8 @@ var combo := 0
 var best_combo := 0
 var elapsed := 0.0
 var spawn_timer := 0.0
+var wave_index := 0
+var spawn_queue: Array[Dictionary] = []
 var next_insect_id := 1
 var game_finished := false
 var status_time := 0.0
@@ -77,6 +92,7 @@ func _ready() -> void:
 	retry_button.pressed.connect(_reset_game)
 	result_menu_button.pressed.connect(_go_to_menu)
 	_style_buttons()
+	score_label.visible = false
 	_reset_game()
 
 
@@ -99,23 +115,30 @@ func _reset_game() -> void:
 	threads.clear()
 	insects.clear()
 	particles.clear()
-	_add_thread(Vector2(82, 980), Vector2(998, 980), true)
-	_add_thread(branch_anchors[1], branch_anchors[7], true)
-	_add_thread(branch_anchors[10], branch_anchors[3], true)
+	spawn_queue.clear()
+	_add_thread(Vector2(190, 980), Vector2(890, 980), true, true)
 	spider_position = Vector2(520, 980)
 	spider_velocity = Vector2.ZERO
 	launch_origin = spider_position
 	airborne = false
 	aiming = false
+	aim_hold_time = 0.0
 	flight_time = 0.0
 	air_catches = 0
+	bounces_this_flight = 0
+	support_thread = 0
+	support_t = 0.471
+	support_direction = 1.0
+	successful_landings = 0
+	rescue_count = 0
 	hunger = 100.0
 	silk = 100.0
 	score = 0
 	combo = 0
 	best_combo = 0
 	elapsed = 0.0
-	spawn_timer = 0.0
+	spawn_timer = 4.6
+	wave_index = 0
 	next_insect_id = 1
 	game_finished = false
 	result_overlay.visible = false
@@ -129,22 +152,36 @@ func _process(delta: float) -> void:
 	if game_finished:
 		queue_redraw()
 		return
-	var world_delta := delta * (0.34 if aiming else 1.0)
+	if aiming:
+		aim_hold_time += delta
+		_update_aim(aim_pointer)
+	var aim_scale := 1.0
+	if aiming and aim_hold_time < AIM_SLOW_TIME:
+		aim_scale = 0.34
+	elif aiming and aim_hold_time < 2.2:
+		aim_scale = lerpf(0.34, 1.0, (aim_hold_time - AIM_SLOW_TIME) / 1.2)
+	var world_delta := delta * aim_scale
 	elapsed += world_delta
 	spawn_timer += world_delta
-	hunger = maxf(0.0, hunger - world_delta * (0.82 + elapsed * 0.0055))
+	hunger = maxf(0.0, hunger - world_delta * (1.16 + elapsed * 0.006))
 	if status_time > 0.0:
 		status_time = maxf(0.0, status_time - delta)
 		if status_time <= 0.0 and not aiming:
 			status_label.text = "HALTEN · ZIEHEN · LOSLASSEN"
 
-	if spawn_timer >= _spawn_interval():
+	if spawn_timer >= _wave_interval():
 		spawn_timer = 0.0
-		_spawn_insect()
+		_queue_wave()
+	_update_spawn_queue(world_delta)
 	_update_insects(world_delta)
+	_update_threads(world_delta)
 	_update_particles(world_delta)
 	if airborne:
 		_update_flight(world_delta)
+	elif not aiming:
+		_update_ground_movement(world_delta)
+	if aiming and aim_hold_time >= AUTO_LAUNCH_TIME:
+		_release_aim(aim_pointer)
 	if hunger <= 0.0:
 		_finish_game(false, "AUSGEHUNGERT")
 	elif elapsed >= SURVIVAL_TIME:
@@ -176,8 +213,12 @@ func _begin_aim(pointer: Vector2) -> void:
 	if pointer.distance_to(spider_position) > 105.0:
 		return
 	aiming = true
+	aim_hold_time = 0.0
 	aim_pointer = pointer
 	aim_cost = 0.0
+	for insect in insects:
+		if insect["kind"] == "dragonfly":
+			insect["dodged_this_aim"] = false
 	status_label.text = "ZIEHE GEGEN DIE FLUGRICHTUNG"
 
 
@@ -188,8 +229,8 @@ func _update_aim(pointer: Vector2) -> void:
 	if pull.length() > MAX_PULL:
 		pointer = spider_position - pull.normalized() * MAX_PULL
 	aim_pointer = pointer
-	aim_cost = _launch_cost((spider_position - aim_pointer).length())
-	status_label.text = "SPRUNGKOSTEN  %.0f SEIDE" % aim_cost
+	aim_cost = _launch_cost((spider_position - aim_pointer).length(), aim_hold_time)
+	status_label.text = "SPRUNGKOSTEN %.0f SEIDE · AUTO %.1fs" % [aim_cost, maxf(0.0, AUTO_LAUNCH_TIME - aim_hold_time)]
 
 
 func _release_aim(pointer: Vector2) -> void:
@@ -197,27 +238,32 @@ func _release_aim(pointer: Vector2) -> void:
 		return
 	_update_aim(pointer)
 	var pull := spider_position - aim_pointer
+	var held_for := aim_hold_time
 	aiming = false
 	if pull.length() < MIN_PULL:
 		status_label.text = "WEITER ZURÜCKZIEHEN"
 		status_time = 1.2
 		return
-	var cost := _launch_cost(pull.length())
+	var cost := _launch_cost(pull.length(), held_for)
 	if silk + 0.01 < cost:
 		status_label.text = "ZU WENIG SEIDE FÜR DIESEN SPRUNG"
 		status_time = 1.5
 		return
 	silk -= cost
 	launch_origin = spider_position
+	launch_support_thread = support_thread
+	launch_support_t = support_t
 	spider_velocity = pull.limit_length(MAX_PULL) * LAUNCH_SCALE
 	airborne = true
 	flight_time = 0.0
 	air_catches = 0
+	bounces_this_flight = 0
 	status_label.text = "FLUGLINIE HALTEN"
+	Input.vibrate_handheld(18)
 
 
-func _launch_cost(pull_length: float) -> float:
-	return 4.0 + clampf(pull_length, 0.0, MAX_PULL) / 29.0
+func _launch_cost(pull_length: float, hold_time: float = aim_hold_time) -> float:
+	return 4.0 + clampf(pull_length, 0.0, MAX_PULL) / 29.0 + maxf(0.0, hold_time - AIM_SLOW_TIME) * 4.0
 
 
 func _update_flight(delta: float) -> void:
@@ -229,7 +275,7 @@ func _update_flight(delta: float) -> void:
 	if flight_time >= 0.15:
 		var landing := _find_landing(previous, spider_position)
 		if bool(landing.get("hit", false)):
-			_land_at(landing["position"])
+			_land_at(landing["position"], landing)
 			return
 	if spider_position.x < -100.0 or spider_position.x > 1180.0 or spider_position.y < 220.0 or spider_position.y > 1760.0:
 		_rescue_or_fall()
@@ -238,28 +284,52 @@ func _update_flight(delta: float) -> void:
 func _find_landing(from: Vector2, to: Vector2) -> Dictionary:
 	var best_t := 2.0
 	var best_position := Vector2.ZERO
-	for anchor in branch_anchors:
+	var best_kind := ""
+	var best_index := -1
+	for anchor_index in range(branch_anchors.size()):
+		var anchor := branch_anchors[anchor_index]
 		if _distance_to_segment(anchor, from, to) <= 42.0:
 			var t := _segment_ratio(anchor, from, to)
 			if t < best_t:
 				best_t = t
 				best_position = anchor
-	for thread in threads:
+				best_kind = "anchor"
+				best_index = anchor_index
+	for thread_index in range(threads.size()):
+		var thread := threads[thread_index]
 		if float(thread["health"]) <= 0.0:
 			continue
 		var intersection := _segment_intersection(from, to, thread["a"], thread["b"])
 		if bool(intersection.get("hit", false)) and float(intersection["t"]) < best_t:
 			best_t = intersection["t"]
 			best_position = intersection["position"]
-	return {"hit": best_t <= 1.0, "position": best_position}
+			best_kind = "thread"
+			best_index = thread_index
+	return {"hit": best_t <= 1.0, "position": best_position, "kind": best_kind, "index": best_index}
 
 
-func _land_at(position: Vector2) -> void:
+func _land_at(position: Vector2, landing: Dictionary = {}) -> void:
 	spider_position = position
 	spider_velocity = Vector2.ZERO
 	airborne = false
+	var new_thread := -1
 	if launch_origin.distance_to(position) >= 70.0:
-		_add_thread(launch_origin, position, false)
+		new_thread = _add_thread(launch_origin, position, false)
+	if landing.get("kind", "") == "thread":
+		support_thread = int(landing.get("index", 0))
+		support_t = _segment_ratio(position, threads[support_thread]["a"], threads[support_thread]["b"])
+	elif new_thread >= 0:
+		support_thread = new_thread
+		support_t = 1.0
+		support_direction = -1.0
+	else:
+		support_thread = _nearest_thread_to_point(position)
+		if support_thread >= 0:
+			support_t = _segment_ratio(position, threads[support_thread]["a"], threads[support_thread]["b"])
+	successful_landings += 1
+	rescue_count = maxi(0, rescue_count - 1)
+	if successful_landings >= 3 and threads.size() > 0 and bool(threads[0].get("starter", false)) and support_thread != 0:
+		threads[0]["health"] = 0.0
 	var landing_bonus := air_catches * maxi(1, combo)
 	if landing_bonus > 0:
 		score += landing_bonus
@@ -269,6 +339,7 @@ func _land_at(position: Vector2) -> void:
 	status_time = 1.5
 	air_catches = 0
 	_create_burst(position, LICHEN)
+	Input.vibrate_handheld(24)
 
 
 func _rescue_or_fall() -> void:
@@ -276,25 +347,128 @@ func _rescue_or_fall() -> void:
 	spider_velocity = Vector2.ZERO
 	air_catches = 0
 	combo = 0
-	if silk >= RESCUE_COST:
-		silk -= RESCUE_COST
+	var rescue_cost := 15.0 + rescue_count * 7.0
+	if silk >= rescue_cost:
+		silk -= rescue_cost
+		rescue_count += 1
 		hunger = maxf(0.0, hunger - 7.0)
 		spider_position = launch_origin
-		status_label.text = "RETTUNGSFADEN · -18 SEIDE · KOMBO VERLOREN"
+		support_thread = launch_support_thread
+		support_t = launch_support_t
+		status_label.text = "RETTUNGSFADEN · -%.0f SEIDE · NAECHSTER WIRD TEURER" % rescue_cost
 		status_time = 2.0
 		_create_burst(spider_position, CORAL)
+		Input.vibrate_handheld(65)
 	else:
 		_finish_game(false, "ABGESTÜRZT")
 
 
-func _add_thread(a: Vector2, b: Vector2, fixed: bool) -> void:
+func _add_thread(a: Vector2, b: Vector2, fixed: bool, starter: bool = false) -> int:
 	if a.distance_to(b) < 45.0:
+		return -1
+	threads.append({"a": a, "b": b, "health": 100.0, "fixed": fixed, "starter": starter, "age": 0.0})
+	return threads.size() - 1
+
+
+func _wave_interval() -> float:
+	return clampf(6.2 - elapsed * 0.012, 4.8, 6.2)
+
+
+func _update_ground_movement(delta: float) -> void:
+	if support_thread < 0 or support_thread >= threads.size():
 		return
-	threads.append({"a": a, "b": b, "health": 100.0, "fixed": fixed})
+	var thread := threads[support_thread]
+	if float(thread["health"]) <= 0.0:
+		return
+	var length: float = (thread["b"] - thread["a"]).length()
+	if length < 1.0:
+		return
+	support_t += support_direction * CRAWL_SPEED * delta / length
+	if support_t >= 1.0:
+		support_t = 1.0
+		support_direction = -1.0
+	elif support_t <= 0.0:
+		support_t = 0.0
+		support_direction = 1.0
+	spider_position = thread["a"].lerp(thread["b"], support_t)
 
 
-func _spawn_interval() -> float:
-	return clampf(2.35 - elapsed * 0.012, 1.18, 2.35)
+func _update_threads(delta: float) -> void:
+	for index in range(threads.size()):
+		var thread := threads[index]
+		thread["age"] = float(thread.get("age", 0.0)) + delta
+		if not bool(thread["fixed"]) and float(thread["age"]) > 18.0:
+			thread["health"] = maxf(0.0, float(thread["health"]) - delta * 0.32)
+	if successful_landings >= 3 and threads.size() > 0 and support_thread != 0 and bool(threads[0].get("starter", false)):
+		threads[0]["health"] = 0.0
+
+
+func _nearest_thread_to_point(point: Vector2) -> int:
+	var best := -1
+	var best_distance := INF
+	for index in range(threads.size()):
+		if float(threads[index]["health"]) <= 0.0:
+			continue
+		var distance := _distance_to_segment(point, threads[index]["a"], threads[index]["b"])
+		if distance < best_distance:
+			best_distance = distance
+			best = index
+	return best
+
+
+func _queue_spawn(kind: String, delay: float, y: float, from_left: bool) -> void:
+	spawn_queue.append({"kind": kind, "delay": delay, "y": y, "from_left": from_left})
+
+
+func _queue_wave() -> void:
+	wave_index += 1
+	var left := wave_index % 2 == 0
+	if elapsed < 18.0:
+		_queue_spawn("fly", 0.0, 650.0, left)
+		_queue_spawn("fly", 0.48, 810.0, left)
+		_queue_spawn("fly", 0.96, 970.0, left)
+	elif wave_index % 4 == 0:
+		_queue_spawn("wasp", 0.0, 760.0, left)
+		_queue_spawn("fly", 0.7, 1040.0, not left)
+	elif wave_index % 4 == 1:
+		_queue_spawn("moth", 0.0, 620.0, left)
+		_queue_spawn("moth", 0.72, 1080.0, not left)
+	elif wave_index % 4 == 2:
+		_queue_spawn("fly", 0.0, 620.0, left)
+		_queue_spawn("beetle", 0.55, 850.0, left)
+		_queue_spawn("fly", 1.1, 1080.0, left)
+	else:
+		_queue_spawn("dragonfly", 0.0, 700.0, left)
+		_queue_spawn("dragonfly", 0.82, 1050.0, not left)
+
+
+func _update_spawn_queue(delta: float) -> void:
+	for index in range(spawn_queue.size() - 1, -1, -1):
+		spawn_queue[index]["delay"] = float(spawn_queue[index]["delay"]) - delta
+		if float(spawn_queue[index]["delay"]) <= 0.0:
+			var entry := spawn_queue[index]
+			_spawn_insect_kind(entry["kind"], float(entry["y"]), bool(entry["from_left"]))
+			spawn_queue.remove_at(index)
+
+
+func _spawn_insect_kind(kind: String, y: float, from_left: bool) -> void:
+	var specs := {
+		"fly": [26.0, 185.0, 1, 9.0, 5.0],
+		"moth": [34.0, 140.0, 3, 16.0, 8.0],
+		"wasp": [31.0, 260.0, 5, 22.0, 11.0],
+		"beetle": [36.0, 125.0, 5, 20.0, 10.0],
+		"dragonfly": [30.0, 295.0, 6, 18.0, 12.0]
+	}
+	var spec: Array = specs.get(kind, specs["fly"])
+	var direction := 1.0 if from_left else -1.0
+	insects.append({
+		"id": next_insect_id, "kind": kind,
+		"position": Vector2(-55.0 if from_left else 1135.0, y),
+		"velocity": Vector2(float(spec[1]) * direction, randf_range(-10.0, 10.0)),
+		"radius": float(spec[0]), "reward": int(spec[2]), "food": float(spec[3]), "silk": float(spec[4]),
+		"phase": randf() * TAU, "hit_threads": {}, "hit_cooldown": 0.0, "dodged_this_aim": false
+	})
+	next_insect_id += 1
 
 
 func _spawn_insect() -> void:
@@ -339,10 +513,14 @@ func _spawn_insect() -> void:
 func _update_insects(delta: float) -> void:
 	for i in range(insects.size() - 1, -1, -1):
 		var insect := insects[i]
+		insect["hit_cooldown"] = maxf(0.0, float(insect.get("hit_cooldown", 0.0)) - delta)
 		var previous: Vector2 = insect["position"]
 		var velocity: Vector2 = insect["velocity"]
 		if insect["kind"] == "moth":
 			velocity.y += sin(elapsed * 4.0 + float(insect["phase"])) * 42.0 * delta
+		elif insect["kind"] == "dragonfly" and aiming and aim_hold_time > 0.65 and not bool(insect.get("dodged_this_aim", false)):
+			velocity = velocity.rotated(0.62 if i % 2 == 0 else -0.62)
+			insect["dodged_this_aim"] = true
 		insect["velocity"] = velocity
 		insect["position"] = previous + velocity * delta
 		for thread_index in range(threads.size()):
@@ -360,8 +538,43 @@ func _update_insects(delta: float) -> void:
 
 func _collect_insects_on_path(from: Vector2, to: Vector2) -> void:
 	for i in range(insects.size() - 1, -1, -1):
-		if _distance_to_segment(insects[i]["position"], from, to) <= float(insects[i]["radius"]) + SPIDER_RADIUS:
-			_collect_insect(i)
+		if float(insects[i].get("hit_cooldown", 0.0)) <= 0.0 and _distance_to_segment(insects[i]["position"], from, to) <= float(insects[i]["radius"]) + SPIDER_RADIUS:
+			_try_hit_insect(i)
+
+
+func _try_hit_insect(index: int) -> bool:
+	if index < 0 or index >= insects.size():
+		return false
+	var insect := insects[index]
+	var kind: String = insect["kind"]
+	var speed := spider_velocity.length()
+	var insect_direction: Vector2 = insect["velocity"].normalized()
+	var approach := spider_velocity.normalized().dot(insect_direction)
+	if kind == "moth" and speed < 520.0:
+		spider_velocity *= 0.74
+		insect["hit_cooldown"] = 0.3
+		status_label.text = "MOTTE ABGESTREIFT · MEHR TEMPO"
+		status_time = 1.0
+		return false
+	if kind == "beetle" and approach < 0.25 and bounces_this_flight == 0:
+		spider_velocity = spider_velocity.bounce((spider_position - insect["position"]).normalized()) * 0.72
+		bounces_this_flight += 1
+		insect["hit_cooldown"] = 0.38
+		status_label.text = "PANZER GEBLOCKT · VON HINTEN ODER NACH ABPRALLER"
+		status_time = 1.2
+		Input.vibrate_handheld(45)
+		return false
+	if kind == "wasp" and approach < -0.25:
+		spider_velocity = -spider_velocity * 0.56
+		hunger = maxf(0.0, hunger - 6.0)
+		combo = 0
+		insect["hit_cooldown"] = 0.42
+		status_label.text = "FRONTALER STICH · HUNGER VERLOREN"
+		status_time = 1.2
+		Input.vibrate_handheld(75)
+		return false
+	_collect_insect(index)
+	return true
 
 
 func _collect_insect(index: int) -> void:
@@ -377,11 +590,12 @@ func _collect_insect(index: int) -> void:
 	status_label.text = "%s IM FLUG ERWISCHT · KOMBO x%d" % [_insect_name(insect["kind"]), combo]
 	status_time = 1.1
 	_create_burst(insect["position"], ORANGE)
+	Input.vibrate_handheld(32)
 	insects.remove_at(index)
 
 
 func _insect_name(kind: String) -> String:
-	return {"fly": "FLIEGE", "moth": "MOTTE", "wasp": "WESPE"}.get(kind, "BEUTE")
+	return {"fly": "FLIEGE", "moth": "MOTTE", "wasp": "WESPE", "beetle": "PANZERKAEFER", "dragonfly": "LIBELLE"}.get(kind, "BEUTE")
 
 
 func _finish_game(won: bool, reason: String) -> void:
@@ -392,7 +606,7 @@ func _finish_game(won: bool, reason: String) -> void:
 	airborne = false
 	result_overlay.visible = true
 	result_title.text = "DU HAST ÜBERLEBT" if won else reason
-	result_detail.text = "%d BEUTEPUNKTE\nBESTE KOMBO x%d · %d FÄDEN GEBAUT" % [score, best_combo, maxi(0, threads.size() - 3)]
+	result_detail.text = "%d BEUTEPUNKTE\nBESTE KOMBO x%d · %d FÄDEN GEBAUT" % [score, best_combo, maxi(0, threads.size() - 1)]
 
 
 func _go_to_menu() -> void:
@@ -430,8 +644,9 @@ func _draw_background() -> void:
 
 func _draw_branches() -> void:
 	for anchor in branch_anchors:
-		draw_circle(anchor, 20.0, Color(PINE, 0.48))
-		draw_arc(anchor, 27.0, 0.0, TAU, 24, Color(LICHEN, 0.48), 3.0, true)
+		draw_circle(anchor, 13.0, Color(PINE, 0.42))
+		if aiming or elapsed < 10.0:
+			draw_arc(anchor, 24.0, 0.0, TAU, 24, Color(LICHEN, 0.44), 2.5, true)
 		_draw_texture_centered(KNOT, anchor, 0.13, 0.0, Color(SILK_COLOR, 0.88))
 
 
@@ -464,11 +679,22 @@ func _draw_insects() -> void:
 			texture = WASP
 			scale = 0.072
 			draw_circle(insect["position"], 48.0, Color(CORAL, 0.14))
+		elif insect["kind"] == "beetle":
+			texture = BEETLE
+			scale = 0.085
+			draw_arc(insect["position"], 43.0, 0.0, TAU, 20, Color(LICHEN, 0.28), 3.0, true)
+		elif insect["kind"] == "dragonfly":
+			texture = DRAGONFLY
+			scale = 0.078
 		_draw_texture_centered(texture, insect["position"], scale, insect["velocity"].angle() + PI * 0.5, Color.WHITE)
 
 
 func _draw_spider() -> void:
 	var rotation := spider_velocity.angle() + PI * 0.5 if airborne else 0.0
+	if not airborne and support_thread >= 0 and support_thread < threads.size():
+		rotation = (threads[support_thread]["b"] - threads[support_thread]["a"]).angle() + PI * 0.5
+		if support_direction < 0.0:
+			rotation += PI
 	if aiming:
 		var pull := spider_position - aim_pointer
 		rotation = pull.angle() + PI * 0.5
@@ -478,19 +704,22 @@ func _draw_spider() -> void:
 
 func _draw_aim() -> void:
 	var pull := (spider_position - aim_pointer).limit_length(MAX_PULL)
-	var cost := _launch_cost(pull.length())
+	var cost := _launch_cost(pull.length(), aim_hold_time)
 	var aim_color := CORAL if cost > silk else ORANGE
 	draw_line(spider_position, spider_position - pull, Color(aim_color, 0.72), 7.0, true)
 	draw_circle(spider_position - pull, 22.0, Color(PINE, 0.8))
 	draw_arc(spider_position - pull, 25.0, 0.0, TAU, 24, aim_color, 4.0, true)
 	var simulated_position := spider_position
 	var simulated_velocity := pull * LAUNCH_SCALE
-	for step in range(1, 13):
+	for step in range(1, 9):
 		var dt := 0.085
 		simulated_velocity.y += GRAVITY * dt
 		simulated_position += simulated_velocity * dt
 		var alpha := 0.82 - float(step) * 0.045
 		draw_circle(simulated_position, 8.0 - float(step) * 0.22, Color(aim_color, alpha))
+	if aim_hold_time > AIM_SLOW_TIME:
+		var pressure := clampf((aim_hold_time - AIM_SLOW_TIME) / (AUTO_LAUNCH_TIME - AIM_SLOW_TIME), 0.0, 1.0)
+		draw_arc(spider_position, 58.0, -PI * 0.5, -PI * 0.5 + TAU * pressure, 32, Color(CORAL, 0.85), 6.0, true)
 
 
 func _create_burst(position: Vector2, color: Color) -> void:
