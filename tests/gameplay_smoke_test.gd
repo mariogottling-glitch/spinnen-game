@@ -165,13 +165,25 @@ func _run() -> void:
 	game.flight_warnings.clear()
 	game._pluck_web()
 	assert(game.vibration >= 34.0)
-	assert(game.flight_warnings.size() == 3)
+	assert(game.flight_warnings.size() == 2)
 	assert(game.lure_cooldown > 0.0)
 	var insect_count_before_warning: int = game.insects.size()
 	game._update_flight_warnings(3.0)
 	assert(game.flight_warnings.is_empty())
-	assert(game.insects.size() == insect_count_before_warning + 3)
+	assert(game.insects.size() == insect_count_before_warning + 2)
 	game.insects.clear()
+
+	# Calm pacing: early hunts never stack more than two reactive prey.
+	game.flight_warnings.clear()
+	game.hunt_level = 1
+	for i in range(8):
+		game._queue_insect_warning(true)
+	assert(game._pending_reactive_warning_count() <= 2)
+	game.flight_warnings.clear()
+	game.hunt_level = 2
+	game.tutorial_banner.visible = true
+	game._update_hud()
+	assert(not game.tutorial_banner.visible)
 
 	game.insects.clear()
 	game._spawn_insect()

@@ -111,14 +111,14 @@ const HUNT_CONTRACTS: Array[Dictionary] = [
 const PLAY_RECT := Rect2(70.0, 230.0, 940.0, 1390.0)
 const JUMP_DURATION := 0.46
 const PREVIEW_INTERVAL := 0.82
-const INSECT_SPAWN_INTERVAL := 1.25
+const INSECT_SPAWN_INTERVAL := 1.65
 const WIND_INTERVAL := 8.0
 const POUNCE_DURATION := 0.28
 const BITE_SWEEP_DURATION := 1.45
 const BITE_PERFECT_WINDOW := 0.16
 const BITE_GOOD_PADDING := 0.13
-const THREAD_GRACE_TIME := 14.0
-const THREAD_DECAY_PER_SECOND := 2.0
+const THREAD_GRACE_TIME := 24.0
+const THREAD_DECAY_PER_SECOND := 1.0
 const LURE_COOLDOWN := 8.0
 const GLYPH_REFRESH_INTERVAL := 0.45
 
@@ -715,6 +715,8 @@ func _jump_to_preview() -> void:
 	var existing_edge := _edge_index(origin, destination)
 	var creates_thread := existing_edge < 0 or edge_health[existing_edge] <= 0.0
 	var silk_cost := _thread_cost(spider_position, anchors[destination]) if creates_thread else 0.0
+	if creates_thread and existing_edge >= 0:
+		silk_cost *= 0.55
 	if silk + 0.01 < silk_cost:
 		status_label.text = "NICHT GENUG SEIDE"
 		hint_label.text = "FANGE INSEKTEN ODER NUTZE KÜRZERE SPRÜNGE"
@@ -1078,14 +1080,13 @@ func _pluck_web() -> void:
 	if active_edges < 3:
 		status_label.text = "BAUE ERST MINDESTENS 3 FÄDEN"
 		return
+	if _reactive_prey_count() > 0:
+		status_label.text = "SICHERE ERST DIE AKTUELLE BEUTE"
+		return
 	lure_cooldown = LURE_COOLDOWN
 	vibration = minf(100.0, vibration + 34.0)
-	if tutorial_step == 3 and hunt_level == 1:
-		tutorial_step = 4
-		_update_tutorial_banner()
 	_queue_insect_warning(true, 0.0)
-	_queue_insect_warning(true, 0.34)
-	_queue_insect_warning(true, 0.68)
+	_queue_insect_warning(true, 0.55)
 	capture_flashes.append({"position": spider_position, "life": 0.9})
 	status_label.text = "NETZ GEZUPFT – BEUTESCHWARM IM ANFLUG!"
 	hint_label.text = "MEHR VIBRATION = BESSERE BEUTE, ABER MEHR GEFAHR"
@@ -1182,7 +1183,7 @@ func _choose_contract(choice: int) -> void:
 
 
 func _thread_cost(a: Vector2, b: Vector2) -> float:
-	return clampf(10.0 + a.distance_to(b) / 30.0, 13.0, 38.0) * thread_cost_multiplier * contract_thread_cost_multiplier
+	return clampf(8.0 + a.distance_to(b) / 40.0, 10.0, 28.0) * thread_cost_multiplier * contract_thread_cost_multiplier
 
 
 func _add_architect_support(node: int, excluded: int) -> void:
@@ -1203,13 +1204,20 @@ func _select_next_preview() -> void:
 	if base_anchor_count <= 1:
 		preview_anchor = -1
 		return
+	var free_fallback := -1
 	for attempt in range(base_anchor_count):
 		preview_cursor = (preview_cursor + 1) % base_anchor_count
-		if anchors[preview_cursor].distance_to(spider_position) < 150.0:
+		if anchors[preview_cursor].distance_to(spider_position) < 110.0:
 			continue
-		preview_anchor = preview_cursor
-		return
-	preview_anchor = -1
+		var edge_index := _edge_index(current_node, preview_cursor)
+		var creates_thread := edge_index < 0 or edge_health[edge_index] <= 0.0
+		if not creates_thread:
+			free_fallback = preview_cursor
+		var cost := _thread_cost(spider_position, anchors[preview_cursor]) if creates_thread else 0.0
+		if silk + 0.01 >= cost:
+			preview_anchor = preview_cursor
+			return
+	preview_anchor = free_fallback
 
 
 func _spawn_insect() -> void:
@@ -1242,7 +1250,7 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		radius = randf_range(9.0, 12.0)
 		speed = randf_range(155.0, 205.0)
 		required_strength = 16.0
-		escape_time = 4.4
+		escape_time = 5.0
 		struggle_damage = 6.0
 		auto_collect = false
 	elif roll > 0.84 and roll <= 0.97:
@@ -1251,7 +1259,7 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		radius = randf_range(13.0, 17.0)
 		speed = randf_range(115.0, 155.0)
 		required_strength = 55.0
-		escape_time = 2.8
+		escape_time = 3.5
 		struggle_damage = 13.0
 		auto_collect = false
 	elif roll > 0.97:
@@ -1260,7 +1268,7 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		radius = randf_range(15.0, 19.0)
 		speed = randf_range(190.0, 245.0)
 		required_strength = 108.0
-		escape_time = 1.65
+		escape_time = 2.2
 		struggle_damage = 30.0
 		auto_collect = false
 	var from_left := randf() < 0.5
@@ -1341,9 +1349,11 @@ func _spawn_insect_from_spec(spec: Dictionary) -> void:
 
 
 func _queue_insect_warning(force_valuable: bool = false, extra_delay: float = 0.0) -> void:
-	if flight_warnings.size() >= 8 or boss_active:
+	if flight_warnings.size() >= 4 or boss_active:
 		return
 	var spec := _create_insect_spec(force_valuable)
+	if not bool(spec["auto_collect"]) and _reactive_prey_count() + _pending_reactive_warning_count() >= _reactive_prey_limit():
+		return
 	var warning_duration := 0.72
 	match String(spec["kind"]):
 		"fly": warning_duration = 0.9
@@ -1369,7 +1379,27 @@ func _update_flight_warnings(delta: float) -> void:
 
 
 func _current_spawn_interval() -> float:
-	return clampf((INSECT_SPAWN_INTERVAL + 0.2 - vibration * 0.006 - float(web_glyphs.size()) * 0.015) * contract_spawn_multiplier, 0.58, 1.55)
+	return clampf((INSECT_SPAWN_INTERVAL - vibration * 0.004) * contract_spawn_multiplier, 0.85, 1.9)
+
+
+func _reactive_prey_limit() -> int:
+	return 2 if hunt_level <= 2 else 3
+
+
+func _reactive_prey_count() -> int:
+	var count := 0
+	for insect in insects:
+		if not bool(insect["auto_collect"]) and not bool(insect["boss"]):
+			count += 1
+	return count
+
+
+func _pending_reactive_warning_count() -> int:
+	var count := 0
+	for warning in flight_warnings:
+		if not bool(warning["spec"]["auto_collect"]):
+			count += 1
+	return count
 
 
 func _spawn_boss_moth() -> void:
@@ -1470,6 +1500,9 @@ func _update_insects(delta: float) -> void:
 				insect["timer"] = 0.0
 				insect["phase"] = _segment_ratio(position, caught_edge)
 				insect["glyph_capture"] = not capture_glyph.is_empty()
+				if not bool(insect["auto_collect"]) and tutorial_step == 2 and hunt_level == 1:
+					tutorial_step = 3
+					_update_tutorial_banner()
 				if insect["glyph_capture"]:
 					insect["escape_time"] = float(insect["escape_time"]) * 1.45
 				edge_health[caught_edge] = maxf(0.0, edge_health[caught_edge] - float(insect["radius"]) * 0.7)
@@ -1764,8 +1797,8 @@ func _collect_insect(index: int, allow_chain: bool = true) -> void:
 	var silk_gain := (4.0 + float(value) * 2.0) * local_silk_multiplier
 	silk = minf(silk_max, silk + silk_gain)
 	vibration = minf(100.0, vibration + 1.5 + float(value) * 0.65)
-	if not was_auto and tutorial_step == 2 and hunt_level == 1:
-		tutorial_step = 3
+	if not was_auto and tutorial_step == 3 and hunt_level == 1:
+		tutorial_step = 4
 		_update_tutorial_banner()
 	match String(insect["kind"]):
 		"firefly":
@@ -1881,6 +1914,7 @@ func _start_next_hunt_level() -> void:
 	flight_warnings.clear()
 	vibration = maxf(0.0, vibration - 25.0)
 	lure_cooldown = 2.0
+	tutorial_banner.visible = false
 	status_label.text = "LEVEL %d - NEUER JAGDAUFTRAG" % hunt_level
 	hint_label.text = "SAMMLE NAHRUNG UND LOCKE DEN NÄCHSTEN MINIBOSS AN"
 	_update_hud()
@@ -1911,8 +1945,11 @@ func _update_threads(delta: float) -> void:
 	else:
 		integrity = clampf((total_ratio / float(edges.size())) * 100.0, 0.0, 100.0)
 
-	if active_count == 0 and not edges.is_empty() and silk < 13.0:
+	if active_count == 0 and not edges.is_empty() and silk < 10.0:
 		_end_run()
+	elif not game_over:
+		var recovery_rate := 0.45 if _reactive_prey_count() > 0 else 0.8
+		silk = minf(silk_max, silk + delta * recovery_rate)
 
 
 func _try_emergency_reserve() -> void:
@@ -2236,8 +2273,11 @@ func _update_hud() -> void:
 	vibration_label.visible = lure_button.visible or vibration >= 10.0
 	vibration_bar.visible = vibration_label.visible
 	glyph_label.visible = triangle_count > 0 or heart_count > 0
-	lure_button.disabled = lure_cooldown > 0.0 or upgrade_open
-	lure_button.text = "ZUPFEN %.0f s" % ceilf(lure_cooldown) if lure_cooldown > 0.0 else "NETZ ZUPFEN"
+	lure_button.disabled = lure_cooldown > 0.0 or upgrade_open or _reactive_prey_count() > 0
+	if _reactive_prey_count() > 0:
+		lure_button.text = "ERST BEUTE SICHERN"
+	else:
+		lure_button.text = "ZUPFEN %.0f s" % ceilf(lure_cooldown) if lure_cooldown > 0.0 else "NETZ ZUPFEN"
 	if boss_active:
 		var active_boss_name := "MINIBOSS"
 		for insect in insects:
@@ -2256,6 +2296,8 @@ func _update_hud() -> void:
 	if tutorial_step == 1 and triangle_count > 0 and hunt_level == 1:
 		tutorial_step = 2
 		_update_tutorial_banner()
+	elif hunt_level != 1 and tutorial_banner.visible:
+		tutorial_banner.visible = false
 
 
 func _update_tutorial_banner() -> void:
@@ -2269,9 +2311,9 @@ func _update_tutorial_banner() -> void:
 		1:
 			tutorial_label.text = "2/4  BAUE EIN DREIECK ALS FANGTASCHE"
 		2:
-			tutorial_label.text = "3/4  TIPPE GEFANGENE BEUTE VOR ABLAUF DES RINGS"
+			tutorial_label.text = "3/4  GESTRICHELTE LINIE = FLUGBAHN · MIT FADEN KREUZEN"
 		3:
-			tutorial_label.text = "4/4  NUTZE NETZ ZUPFEN FÜR EINEN RISIKOSCHWARM"
+			tutorial_label.text = "4/4  RING AM TIER = FLUCHTZEIT · TIER ANTIPPEN"
 
 
 func _build_summary_text() -> String:
@@ -2365,6 +2407,7 @@ func _draw_web() -> void:
 
 func _draw_web_glyphs() -> void:
 	var pulse := 0.5 + sin(elapsed_time * 3.2) * 0.5
+	var visible_hearts := 0
 	for glyph in web_glyphs:
 		if glyph["type"] == "triangle":
 			var nodes: Array = glyph["nodes"]
@@ -2381,10 +2424,13 @@ func _draw_web_glyphs() -> void:
 			draw_arc(center, 17.0 + pulse * 3.0, 0.0, TAU, 20, Color(SKY, 0.85), 3.0, true)
 			draw_string(ThemeDB.fallback_font, center + Vector2(-9.0, 7.0), "△", HORIZONTAL_ALIGNMENT_CENTER, 18.0, 20, CREAM)
 		elif glyph["type"] == "heart":
+			if visible_hearts >= 3:
+				continue
+			visible_hearts += 1
 			var position: Vector2 = anchors[int(glyph["node"])]
-			draw_circle(position, 28.0 + pulse * 5.0, Color(HONEY, 0.08 + pulse * 0.05))
-			draw_arc(position, 31.0 + pulse * 5.0, 0.0, TAU, 24, Color(HONEY, 0.65), 4.0, true)
-			draw_circle(position, 7.0, Color(HONEY, 0.9))
+			draw_circle(position, 20.0 + pulse * 3.0, Color(HONEY, 0.055 + pulse * 0.035))
+			draw_arc(position, 23.0 + pulse * 3.0, 0.0, TAU, 20, Color(HONEY, 0.46), 3.0, true)
+			draw_circle(position, 5.0, Color(HONEY, 0.82))
 
 
 func _draw_flight_warnings() -> void:
@@ -2401,11 +2447,14 @@ func _draw_flight_warnings() -> void:
 			"beetle": warning_color = Color(BERRY, 0.5 + blink * 0.28)
 			"dragonfly": warning_color = Color(SKY, 0.58 + blink * 0.3)
 			"firefly": warning_color = Color(HONEY, 0.62 + blink * 0.3)
+		warning_color.a *= 0.72
 		var y: float = spec["y"]
-		draw_dashed_line(Vector2(54.0, y), Vector2(1026.0, y), warning_color, 3.0, 24.0, true)
 		var from_left: bool = spec["from_left"]
 		var tip := Vector2(74.0 if from_left else 1006.0, y)
 		var direction := 1.0 if from_left else -1.0
+		var lane_start := Vector2(54.0 if from_left else 1026.0, y)
+		var lane_end := lane_start + Vector2(470.0 * direction, 0.0)
+		draw_dashed_line(lane_start, lane_end, warning_color, 2.0, 30.0, true)
 		var arrow := PackedVector2Array([
 			tip + Vector2(22.0 * direction, 0.0),
 			tip + Vector2(-7.0 * direction, -15.0),
@@ -2414,6 +2463,8 @@ func _draw_flight_warnings() -> void:
 		draw_colored_polygon(arrow, warning_color)
 		var countdown_center := tip + Vector2(46.0 * direction, 0.0)
 		draw_arc(countdown_center, 22.0, -PI * 0.5, -PI * 0.5 + TAU * (1.0 - remaining), 28, warning_color, 5.0, true)
+		var label_position := tip + Vector2(82.0 * direction - (65.0 if not from_left else 0.0), -12.0)
+		draw_string(FADENSCHNITT_DISPLAY_FONT, label_position, "ANFLUG", HORIZONTAL_ALIGNMENT_LEFT, 78.0, 18, warning_color)
 
 
 func _draw_thread_texture(texture: Texture2D, a: Vector2, b: Vector2, height: float, modulate: Color) -> void:

@@ -695,6 +695,25 @@ So bleibt der Roguelite-Zufall bestehen, während ein geplanter Build realistisc
   das Bissfenster, Jägerinnen-Perks erhöhen Schaden, Ökonomie verbessert die
   Bossbelohnung und die Brut kann aktiv am Bosskampf teilnehmen.
 
+## Reaktions- und Netzbau-Balance ab 0.12.1
+
+- In Jagdlevel 1 und 2 sind höchstens zwei aktiv zu sichernde Beutetiere
+  gleichzeitig unterwegs. Spätere Level erlauben höchstens drei.
+- Flugwarnungen werden auf vier Gesamthinweise begrenzt und nur noch als kurze,
+  beschriftete Einflugspur am Bildschirmrand gezeichnet.
+- Netz-Zupfen lockt zwei statt drei wertvolle Tiere und ist gesperrt, solange
+  bereits aktive Beute gesichert werden muss.
+- Ruhige Netze erzeugen Anflüge langsamer; Vibration bleibt der bewusst gewählte
+  Temporegler.
+- Neue Fäden kosten 10 bis 28 statt 13 bis 38 Seide. Das Reparieren einer
+  gerissenen Verbindung kostet nur 55 Prozent.
+- Fäden altern erst nach 24 Sekunden und verlieren danach nur einen statt zwei
+  Haltbarkeitspunkte pro Sekunde.
+- Seide regeneriert sich langsam passiv, besonders wenn gerade keine aktive
+  Beute auf dem Netz liegt.
+- Die Einführung erklärt Flugbahn und Fluchtring getrennt. Sie verschwindet
+  spätestens beim Wechsel in Jagdlevel 2.
+
 ## Neue freischaltbare Perks
 
 - **Panzerknoten (Festung):** Neue Fäden starten mit zusätzlicher Haltbarkeit.

@@ -775,3 +775,20 @@ Das Interface zeigt Systeme nicht mehr alle gleichzeitig, sondern nach Relevanz.
 - Ein vollständiger Run umfasst fünf Jagdgebiete und endet mit einer sichtbaren
   Auswertung. Kollaps und erfolgreicher Abschluss verwenden dieselbe klare
   Ergebnisstruktur.
+
+## Ruhe vor Dichte
+
+Die mobile Spielfläche darf nie mehr als drei gleichzeitig reaktionspflichtige
+Ziele zeigen. Kleine automatische Beute zählt nicht dazu. Neue Anflüge werden
+zurückgehalten, solange bereits mehrere Fangringe Aufmerksamkeit verlangen.
+
+Flughinweise bestehen aus einer kurzen gestrichelten Einflugspur, einem Pfeil,
+einem Countdown und dem Wort „Anflug“. Sie reichen nicht mehr über die gesamte
+Karte. Seidenherzen bleiben mechanisch vollständig aktiv, aber höchstens drei
+ihrer Pulskreise werden gleichzeitig dargestellt.
+
+Das Spiel unterscheidet dadurch klar:
+
+- Blau gestrichelt von der Spinne: nächster Sprung und neuer Faden.
+- Farbige Randspur mit Pfeil: bevorstehende Flugrichtung der Beute.
+- Ring direkt am Tier: verbleibende Zeit zum Antippen.
