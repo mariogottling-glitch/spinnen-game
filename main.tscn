@@ -1407,7 +1407,7 @@ theme_override_font_sizes/font_size = 1
 theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_hotspot")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_menu_hotspot")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_menu_hotspot")
-text = "JAGD BEGINNEN"
+text = "FADENFLUG STARTEN"
 
 [node name="HowToButton" type="Button" parent="StartMenu/MenuCard"]
 offset_left = 125.0
@@ -1502,7 +1502,7 @@ theme_override_colors/font_color = Color(0.973, 0.961, 0.922, 0.94)
 theme_override_colors/font_shadow_color = Color(0.018, 0.071, 0.044, 0.8)
 theme_override_constants/line_spacing = 16
 theme_override_font_sizes/font_size = 23
-text = "1   JAGDVERTRAG WÄHLEN\nEntscheide vor jedem Level, welches Risiko und welche Belohnung deine Jagd verändert.\n\n2   NETZFORMEN BAUEN\nDreiecke werden Fangtaschen. Knoten mit vier Fäden werden reparierende Seidenherzen.\n\n3   ANFLÜGE LESEN\nGestrichelte Korridore kündigen Tiere an. Käfer brauchen starke Formen, Libellen wenden und Glühwürmchen beruhigen das Netz.\n\n4   AKTIV ZUSCHLAGEN\nTippe auf gefangene Beute, bevor der Ring abläuft. Nutze Netz zupfen für riskante Schwärme.\n\n5   DEINEN BUILD FORMEN\nSammle XP und kombiniere Perks passend zu Vertrag und Spezialtieren."
+text = "1   SPINNE GREIFEN\nHalte die Spinne direkt mit dem Finger fest. Die Jagdwelt läuft beim Zielen langsamer.\n\n2   ZURÜCKZIEHEN\nZiehe entgegen der Flugrichtung. Entfernung und Winkel bestimmen Kraft und Flugbahn.\n\n3   LOSLASSEN\nTriff Beute aktiv im Flug. Tiere im Netz werden nur gebremst und niemals automatisch gefangen.\n\n4   SICHER LANDEN\nLande auf einem Ast oder Faden. Zwischen Start und Landung entsteht dein neuer Netzfaden.\n\n5   ÜBERLEBEN\nFänge füllen Hunger und Seide. Fehlsprünge kosten Rettungsseide und brechen deine Kombo."
 autowrap_mode = 2
 
 [node name="BackButton" type="Button" parent="StartMenu/HowToOverlay/Panel"]

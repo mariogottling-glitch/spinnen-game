@@ -791,3 +791,10 @@ Das Spiel unterscheidet dadurch klar:
 
 - Blau gestrichelt von der Spinne: nächster Sprung und neuer Faden.
 - Ring direkt am Tier: verbleibende Zeit zum Antippen.
+# Fadenflug – Interaktions- und Visualsprache
+
+Der neue Primärmodus zeigt die Spinne als physisches Geschoss im eigenen Netz. Beim Halten wird die Welt verlangsamt; eine kurze Folge aus organischen Flugpunkten zeigt die ungefähre Parabel. Der Finger zieht entgegen der Flugrichtung. Kraft, Sprungkosten und die resultierende Fluglinie müssen in weniger als einer Sekunde erfassbar sein.
+
+Astpunkte sind keine aufgesetzten UI-Schaltflächen. Sie liegen in der Randvegetation und erscheinen als kleine Seidenknoten mit einem zurückhaltenden flechtengrünen Ring. Das Netz ist funktionale Levelgeometrie: feste Startfäden sind blasser, selbst gebaute Flugfäden heller und stärker. Beute erhält keine permanenten Zielpfeile. Verlangsamung am Netz, Flugtreffer, sichere Landung und Rettungsfaden werden ausschließlich über kurze Farbimpulse in Orange, Himmelblau, Flechtengrün oder Koralle kommuniziert.
+
+Das HUD priorisiert nur vier Survivalwerte: verbleibende Zeit, Hunger, Seide und Kombo. Alle anderen Informationen erscheinen situativ. Ziel ist ein körperliches, schnelles Spielgefühl aus Spannen, Loslassen, Treffen und Landen – nicht das Verwalten abstrakter Netzpunkte.

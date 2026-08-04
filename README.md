@@ -5,6 +5,10 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 
 ## Current prototype
 
+- Primary `Fadenflug` survival mode: hold the spider, pull backward, and release to launch
+- Branch knots and existing silk act as landing points; every safe flight creates a new thread
+- Prey must be hit directly in flight, while the web only slows insects and opens new angles
+- Ninety-second survival loop with hunger pressure, silk costs, rescue threads, and aerial combos
 - Portrait layout at a 1080 × 1920 logical resolution
 - Touch and mouse input
 - Three stable, directly tappable web targets with visible silk costs

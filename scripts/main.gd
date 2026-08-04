@@ -318,7 +318,7 @@ func _ready() -> void:
 	upgrade_reroll_button.pressed.connect(_reroll_upgrades)
 	level_complete_button.pressed.connect(_continue_after_result)
 	menu_button.pressed.connect(_open_main_menu)
-	play_button.button_down.connect(_start_game_from_menu)
+	play_button.button_down.connect(_start_sling_prototype)
 	how_to_button.button_down.connect(_show_how_to)
 	settings_button.button_down.connect(_show_settings)
 	update_button.button_down.connect(_open_android_update)
@@ -410,7 +410,7 @@ func _activate_menu_control_at(tap_position: Vector2) -> bool:
 			_close_menu_panel()
 		return true
 	if play_button.get_global_rect().has_point(tap_position):
-		_start_game_from_menu()
+		_start_sling_prototype()
 	elif how_to_button.get_global_rect().has_point(tap_position):
 		_show_how_to()
 	elif settings_button.get_global_rect().has_point(tap_position):
@@ -487,7 +487,7 @@ func _show_main_menu(initial: bool = false) -> void:
 	menu_button.visible = false
 	how_to_overlay.visible = false
 	settings_overlay.visible = false
-	play_button.text = "WEITERSPIELEN" if run_started else "JAGD BEGINNEN"
+	play_button.text = "FADENFLUG STARTEN"
 	menu_card.pivot_offset = menu_card.size * 0.5
 	if reduced_motion:
 		menu_card.scale = Vector2.ONE
@@ -511,13 +511,19 @@ func _open_main_menu() -> void:
 	_show_main_menu(false)
 
 
-func _start_game_from_menu() -> void:
+func _start_sling_prototype() -> void:
+	if menu_transitioning:
+		return
+	get_tree().change_scene_to_file("res://sling_prototype.tscn")
+
+
+func _start_classic_game_from_menu() -> void:
 	if menu_transitioning:
 		return
 	if not run_started:
 		_reset_run()
 		run_started = true
-	play_button.text = "WEITERSPIELEN"
+	play_button.text = "KLASSISCHE JAGD FORTSETZEN"
 	_close_menu_panel()
 	start_menu.visible = false
 	menu_open = false
@@ -530,6 +536,11 @@ func _start_game_from_menu() -> void:
 	menu_title.modulate = Color.WHITE
 	if current_contract.is_empty() and not contract_open:
 		_open_contract_selection()
+
+
+# Kept for visual-capture tools and direct classic-mode regression tests.
+func _start_game_from_menu() -> void:
+	_start_classic_game_from_menu()
 
 
 func _show_how_to() -> void:
@@ -563,7 +574,7 @@ func _toggle_reduced_motion() -> void:
 func _prepare_new_run() -> void:
 	_reset_run()
 	run_started = false
-	play_button.text = "JAGD BEGINNEN"
+	play_button.text = "FADENFLUG STARTEN"
 	settings_overlay.visible = false
 	status_label.text = "NEUE JAGD VORBEREITET"
 	reset_confirmation_pending = false

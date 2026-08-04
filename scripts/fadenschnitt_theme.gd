@@ -105,13 +105,14 @@ static func _apply_start_menu(root: Node) -> void:
 	subtitle.visible = true
 	subtitle.position = Vector2(140, 948)
 	subtitle.size = Vector2(800, 76)
-	subtitle.text = "BAUE.  LOCKE.  SCHLAGE ZU."
+	subtitle.text = "ZIEH.  FLITSCH.  ÜBERLEBE."
 	subtitle.add_theme_font_override("font", DISPLAY_FONT)
 	subtitle.add_theme_font_size_override("font_size", 30)
 	subtitle.add_theme_color_override("font_color", LICHEN)
 
 	var play := root.get_node("StartMenu/MenuCard/PlayButton") as Button
 	_style_menu_button(play, Vector2(105, 1120), Vector2(870, 150), true)
+	play.text = "FADENFLUG STARTEN"
 	var how_to := root.get_node("StartMenu/MenuCard/HowToButton") as Button
 	_style_menu_button(how_to, Vector2(105, 1310), Vector2(410, 118), false)
 	var settings := root.get_node("StartMenu/MenuCard/SettingsButton") as Button
