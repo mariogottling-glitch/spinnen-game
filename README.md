@@ -7,8 +7,8 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 
 - Portrait layout at a 1080 × 1920 logical resolution
 - Touch and mouse input
-- A cycling preview anchor
-- One tap creates a new thread and makes the spider jump
+- Three stable, directly tappable web targets with visible silk costs
+- Tactical target labels distinguish short, long, and trap-closing connections
 - Automatic graph movement along connected threads
 - Four-frame leg animation while crawling, paced by movement speed
 - Four-stage jump animation with arc, airborne shadow, squash, and landing bounce
@@ -25,7 +25,7 @@ Android-first 2D prototype of the one-tap web-building mechanic described in
 - Textured multi-fiber silk, reinforced braids, sticky dew strands, and illustrated web knots
 - Food objectives followed by a rotating three-boss cycle with an active timing-based bite duel
 - Living Web geometry: triangular capture pockets and self-repairing four-way silk hearts
-- Telegraph flight corridors that reveal approach direction before valuable prey enters
+- Calm early encounter pacing without flight-corridor overlays
 - Player-triggered web pluck with escalating vibration, better prey, combos, and extra thread strain
 - Three-of-six hunt contracts before every level, each changing risk, tempo, rewards, and prey mix
 - Armored beetles, multi-pass dragonflies, and calming fireflies with distinct counterplay

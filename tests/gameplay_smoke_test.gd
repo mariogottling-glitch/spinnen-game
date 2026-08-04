@@ -70,6 +70,18 @@ func _run() -> void:
 	assert(not game.current_contract.is_empty())
 	assert(game.tutorial_banner.visible)
 	assert(game.tutorial_step == 0)
+	assert(game.hunt_goal >= game.BASE_HUNT_GOAL)
+	assert(not game._boss_build_ready())
+	game.elapsed_time = game.FIRST_BOSS_UNLOCK_TIME
+	game.level = 3
+	assert(game._boss_build_ready())
+	game.elapsed_time = 0.0
+	game.level = 1
+	assert(game.preview_options.size() == game.PREVIEW_OPTION_COUNT)
+	var first_preview_target: int = game.preview_options[0]
+	assert(game._preview_option_at(game.anchors[first_preview_target]) == first_preview_target)
+	assert(game._preview_option_at(Vector2(-500.0, -500.0)) == -1)
+	assert(game._triangle_completion_count(game.current_node, first_preview_target) >= 0)
 	game._open_main_menu()
 	assert(game.menu_open)
 	assert(not game.hud.visible)
@@ -162,6 +174,7 @@ func _run() -> void:
 	assert(not game._triangle_glyph_at(triangle_center).is_empty())
 	game.vibration = 0.0
 	game.lure_cooldown = 0.0
+	game.insects.clear()
 	game.flight_warnings.clear()
 	game._pluck_web()
 	assert(game.vibration >= 34.0)

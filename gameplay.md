@@ -839,3 +839,8 @@ nicht nur Zahlen, sondern auch Tempo, bevorzugte Beute und die passende Netzstra
 
 Verträge, Netzgeometrie und Perks bilden zusammen die drei Ebenen eines Runs:
 Levelregel wählen, Netz passend bauen und den Build auf die entstehenden Chancen ausrichten.
+# Netzbau-Zielwahl
+
+Bei jedem Netzbau werden bis zu drei stabile Anschlussziele angeboten. Der Spieler tippt das gewünschte Ziel direkt an; freie Taps lösen keinen automatischen Sprung mehr aus. Die Ziele zeigen ihre Seidenkosten und markieren Verbindungen, die sofort eine Fangtasche schließen. Dadurch entscheidet der Spieler nicht nur über das Timing, sondern auch über Form, Kosten und taktischen Nutzen des Netzes.
+
+Das erste Jagdziel liegt bei 36 Nahrung und soll inklusive Miniboss ungefähr 90–120 Sekunden dauern. Der erste Miniboss wird frühestens nach 80 Sekunden und einem Build-Level von mindestens 3 aktiv. Die XP-Kurve startet bei 10 XP und steigt pro Build-Level um den Faktor 1,5, damit ein erster Jagdabschnitt typischerweise drei bis fünf prägende Upgrades statt einer Upgrade-Flut enthält. Überschüssige Beute bleibt als Gesamtnahrung erhalten, bläht aber den Jagdzähler nicht über das Ziel hinaus auf. Fangfenster werden ab Jagdlevel 2 schrittweise enger. Passive Seidenerholung beginnt erst nach zwei ruhigen Sekunden und füllt höchstens 72 Prozent des aktuellen Maximums; aktive Fänge und Upgrades bleiben die Hauptquellen für volle Reserven.
