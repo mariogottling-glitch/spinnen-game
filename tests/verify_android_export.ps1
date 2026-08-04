@@ -13,7 +13,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "APK-Inhalt konnte nicht gelesen werden."
 }
 
-$source = (Get-Content -Raw "scripts/main.gd") + (Get-Content -Raw "scripts/fadenschnitt_theme.gd")
+$source = (Get-Content -Raw "scripts/main.gd") + (Get-Content -Raw "scripts/fadenschnitt_theme.gd") + (Get-Content -Raw "scripts/sling_prototype.gd")
 $preloadPaths = [regex]::Matches($source, 'preload\("res://([^\"]+)"\)') |
     ForEach-Object { $_.Groups[1].Value } |
     Sort-Object -Unique
@@ -26,9 +26,15 @@ foreach ($path in $preloadPaths) {
     }
 }
 
-foreach ($script in @("main", "upgrade_database", "fadenschnitt_theme")) {
+foreach ($script in @("main", "upgrade_database", "fadenschnitt_theme", "sling_prototype")) {
     if (-not ($entries | Select-String -SimpleMatch "assets/scripts/$script.gdc" -Quiet)) {
         $missing += "scripts/$script.gd"
+    }
+}
+
+foreach ($scene in @("main.tscn", "sling_prototype.tscn")) {
+    if (-not ($entries | Select-String -SimpleMatch $scene -Quiet)) {
+        $missing += $scene
     }
 }
 
