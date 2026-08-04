@@ -33,10 +33,10 @@ func _run() -> void:
 	assert(game.menu_open)
 	assert(game.start_menu.visible)
 	assert(not game.hud.visible)
-	assert(game.play_button.text == "JAGD BEGINNEN")
+	assert(game.play_button.text == "FADENFLUG STARTEN")
 	assert(game.update_button.text == "UPDATE LADEN")
 	assert(game.ANDROID_UPDATE_URL.ends_with("/releases/latest/download/web-weaver-android.apk?download=1"))
-	assert(game.play_button.button_down.is_connected(game._start_game_from_menu))
+	assert(game.play_button.button_down.is_connected(game._start_sling_prototype))
 	assert(game.how_to_button.button_down.is_connected(game._show_how_to))
 	assert(game.settings_button.button_down.is_connected(game._show_settings))
 	assert(game.update_button.button_down.is_connected(game._open_android_update))
@@ -44,14 +44,13 @@ func _run() -> void:
 	assert(game.contract_one.button_down.is_connected(game._choose_contract.bind(0)))
 	var touch := InputEventScreenTouch.new()
 	touch.pressed = true
-	touch.position = game.play_button.get_global_rect().get_center()
+	touch.position = game.how_to_button.get_global_rect().get_center()
 	assert(game._activate_menu_control_at(touch.position))
-	assert(game.run_started)
-	assert(not game.menu_open)
-	game._open_main_menu()
+	assert(game.how_to_overlay.visible)
+	game._close_menu_panel()
 	game._toggle_reduced_motion()
 	assert(game.reduced_motion)
-	game.play_button.button_down.emit()
+	game._start_classic_game_from_menu()
 	assert(game.run_started)
 	assert(not game.menu_open)
 	assert(not game.start_menu.visible)
@@ -70,10 +69,22 @@ func _run() -> void:
 	assert(not game.current_contract.is_empty())
 	assert(game.tutorial_banner.visible)
 	assert(game.tutorial_step == 0)
+	assert(game.hunt_goal >= game.BASE_HUNT_GOAL)
+	assert(not game._boss_build_ready())
+	game.elapsed_time = game.FIRST_BOSS_UNLOCK_TIME
+	game.level = 3
+	assert(game._boss_build_ready())
+	game.elapsed_time = 0.0
+	game.level = 1
+	assert(game.preview_options.size() == game.PREVIEW_OPTION_COUNT)
+	var first_preview_target: int = game.preview_options[0]
+	assert(game._preview_option_at(game.anchors[first_preview_target]) == first_preview_target)
+	assert(game._preview_option_at(Vector2(-500.0, -500.0)) == -1)
+	assert(game._triangle_completion_count(game.current_node, first_preview_target) >= 0)
 	game._open_main_menu()
 	assert(game.menu_open)
 	assert(not game.hud.visible)
-	assert(game.play_button.text == "WEITERSPIELEN")
+	assert(game.play_button.text == "FADENFLUG STARTEN")
 	game.how_to_button.button_down.emit()
 	assert(game.how_to_overlay.visible)
 	game._close_menu_panel()
@@ -162,6 +173,7 @@ func _run() -> void:
 	assert(not game._triangle_glyph_at(triangle_center).is_empty())
 	game.vibration = 0.0
 	game.lure_cooldown = 0.0
+	game.insects.clear()
 	game.flight_warnings.clear()
 	game._pluck_web()
 	assert(game.vibration >= 34.0)

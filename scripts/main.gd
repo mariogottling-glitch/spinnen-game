@@ -110,7 +110,6 @@ const HUNT_CONTRACTS: Array[Dictionary] = [
 
 const PLAY_RECT := Rect2(70.0, 230.0, 940.0, 1390.0)
 const JUMP_DURATION := 0.46
-const PREVIEW_INTERVAL := 0.82
 const INSECT_SPAWN_INTERVAL := 1.65
 const WIND_INTERVAL := 8.0
 const POUNCE_DURATION := 0.28
@@ -121,6 +120,10 @@ const THREAD_GRACE_TIME := 24.0
 const THREAD_DECAY_PER_SECOND := 1.0
 const LURE_COOLDOWN := 8.0
 const GLYPH_REFRESH_INTERVAL := 0.45
+const BASE_HUNT_GOAL := 36
+const PREVIEW_OPTION_COUNT := 3
+const PREVIEW_HIT_RADIUS := 64.0
+const FIRST_BOSS_UNLOCK_TIME := 80.0
 
 var anchors: Array[Vector2] = []
 var base_anchor_count := 0
@@ -218,12 +221,13 @@ var contract_vibration_floor := 0.0
 var contract_thread_cost_multiplier := 1.0
 var contract_rare_bonus := 0.0
 
-var preview_cursor := 0
 var preview_anchor := -1
-var preview_timer := 0.0
+var preview_options: Array[int] = []
 var insect_timer := 0.0
 var wind_timer := 0.0
 var elapsed_time := 0.0
+var hunt_started_at := 0.0
+var calm_recovery_timer := 0.0
 
 var thread_strength := 100.0
 var capture_radius := 15.0
@@ -239,7 +243,8 @@ var upgrade_selecting := false
 var game_over := false
 var hunt_level := 1
 var hunt_food := 0
-var hunt_goal := 24
+var hunt_goal := BASE_HUNT_GOAL
+var hunt_boss_food := 0
 var boss_active := false
 var level_complete := false
 var run_complete := false
@@ -313,7 +318,7 @@ func _ready() -> void:
 	upgrade_reroll_button.pressed.connect(_reroll_upgrades)
 	level_complete_button.pressed.connect(_continue_after_result)
 	menu_button.pressed.connect(_open_main_menu)
-	play_button.button_down.connect(_start_game_from_menu)
+	play_button.button_down.connect(_start_sling_prototype)
 	how_to_button.button_down.connect(_show_how_to)
 	settings_button.button_down.connect(_show_settings)
 	update_button.button_down.connect(_open_android_update)
@@ -338,7 +343,6 @@ func _process(delta: float) -> void:
 		return
 
 	elapsed_time += delta
-	preview_timer += delta
 	insect_timer += delta
 	wind_timer += delta
 	lure_cooldown = maxf(0.0, lure_cooldown - delta)
@@ -347,10 +351,6 @@ func _process(delta: float) -> void:
 	if glyph_refresh_timer <= 0.0:
 		glyph_refresh_timer = GLYPH_REFRESH_INTERVAL
 		_refresh_web_glyphs()
-
-	if preview_timer >= PREVIEW_INTERVAL:
-		preview_timer = 0.0
-		_select_next_preview()
 
 	if insect_timer >= _current_spawn_interval() and not boss_active:
 		insect_timer = 0.0
@@ -410,7 +410,7 @@ func _activate_menu_control_at(tap_position: Vector2) -> bool:
 			_close_menu_panel()
 		return true
 	if play_button.get_global_rect().has_point(tap_position):
-		_start_game_from_menu()
+		_start_sling_prototype()
 	elif how_to_button.get_global_rect().has_point(tap_position):
 		_show_how_to()
 	elif settings_button.get_global_rect().has_point(tap_position):
@@ -469,7 +469,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		if prey_index >= 0:
 			_pounce_on_insect(prey_index)
 		else:
-			_jump_to_preview()
+			var chosen_target := _preview_option_at(tap_position)
+			if chosen_target >= 0:
+				preview_anchor = chosen_target
+				_jump_to_preview()
+			else:
+				status_label.text = "WÄHLE EIN NETZZIEL"
+				hint_label.text = "TIPPE AUF KURZ, WEIT ODER FANGTASCHE"
 
 
 func _show_main_menu(initial: bool = false) -> void:
@@ -481,7 +487,7 @@ func _show_main_menu(initial: bool = false) -> void:
 	menu_button.visible = false
 	how_to_overlay.visible = false
 	settings_overlay.visible = false
-	play_button.text = "WEITERSPIELEN" if run_started else "JAGD BEGINNEN"
+	play_button.text = "FADENFLUG STARTEN"
 	menu_card.pivot_offset = menu_card.size * 0.5
 	if reduced_motion:
 		menu_card.scale = Vector2.ONE
@@ -505,13 +511,19 @@ func _open_main_menu() -> void:
 	_show_main_menu(false)
 
 
-func _start_game_from_menu() -> void:
+func _start_sling_prototype() -> void:
+	if menu_transitioning:
+		return
+	get_tree().change_scene_to_file("res://sling_prototype.tscn")
+
+
+func _start_classic_game_from_menu() -> void:
 	if menu_transitioning:
 		return
 	if not run_started:
 		_reset_run()
 		run_started = true
-	play_button.text = "WEITERSPIELEN"
+	play_button.text = "KLASSISCHE JAGD FORTSETZEN"
 	_close_menu_panel()
 	start_menu.visible = false
 	menu_open = false
@@ -524,6 +536,11 @@ func _start_game_from_menu() -> void:
 	menu_title.modulate = Color.WHITE
 	if current_contract.is_empty() and not contract_open:
 		_open_contract_selection()
+
+
+# Kept for visual-capture tools and direct classic-mode regression tests.
+func _start_game_from_menu() -> void:
+	_start_classic_game_from_menu()
 
 
 func _show_how_to() -> void:
@@ -557,7 +574,7 @@ func _toggle_reduced_motion() -> void:
 func _prepare_new_run() -> void:
 	_reset_run()
 	run_started = false
-	play_button.text = "JAGD BEGINNEN"
+	play_button.text = "FADENFLUG STARTEN"
 	settings_overlay.visible = false
 	status_label.text = "NEUE JAGD VORBEREITET"
 	reset_confirmation_pending = false
@@ -584,6 +601,7 @@ func _reset_run() -> void:
 	flight_warnings.clear()
 	web_glyphs.clear()
 	web_glyph_ids.clear()
+	preview_options.clear()
 	offered_contracts.clear()
 	current_contract.clear()
 
@@ -671,32 +689,33 @@ func _reset_run() -> void:
 	silk = silk_max
 	food = 0
 	xp = 0
-	xp_target = 8
+	xp_target = 10
 	level = 1
 	upgrade_open = false
 	upgrade_selecting = false
 	game_over = false
 	hunt_level = 1
 	hunt_food = 0
-	hunt_goal = 24
+	hunt_goal = BASE_HUNT_GOAL
+	hunt_boss_food = 0
 	_reset_contract_modifiers()
 	boss_active = false
 	level_complete = false
 	run_complete = false
 	tutorial_step = 0
 	elapsed_time = 0.0
-	preview_timer = 0.0
+	hunt_started_at = 0.0
+	calm_recovery_timer = 0.0
 	insect_timer = 0.0
 	wind_timer = 0.0
 	lure_button.visible = false
 	contract_overlay.visible = false
-	preview_cursor = 11
 	_create_pollen()
 	upgrade_overlay.visible = false
 	level_complete_overlay.visible = false
 	tutorial_banner.visible = false
 	status_label.text = "DAS NETZ WÄCHST"
-	hint_label.text = "TIPPE, UM ZUM LEUCHTENDEN PUNKT ZU SPRINGEN"
+	hint_label.text = "WÄHLE EINES VON DREI NETZZIELEN"
 	_select_next_preview()
 	_update_hud()
 	queue_redraw()
@@ -1201,23 +1220,90 @@ func _add_architect_support(node: int, excluded: int) -> void:
 
 
 func _select_next_preview() -> void:
+	preview_options.clear()
+	preview_anchor = -1
 	if base_anchor_count <= 1:
-		preview_anchor = -1
 		return
-	var free_fallback := -1
-	for attempt in range(base_anchor_count):
-		preview_cursor = (preview_cursor + 1) % base_anchor_count
-		if anchors[preview_cursor].distance_to(spider_position) < 110.0:
+
+	var candidates: Array[Dictionary] = []
+	var free_fallbacks: Array[Dictionary] = []
+	for node in range(base_anchor_count):
+		if node == current_node:
 			continue
-		var edge_index := _edge_index(current_node, preview_cursor)
+		var distance := anchors[node].distance_to(spider_position)
+		if distance < 125.0:
+			continue
+		var edge_index := _edge_index(current_node, node)
 		var creates_thread := edge_index < 0 or edge_health[edge_index] <= 0.0
-		if not creates_thread:
-			free_fallback = preview_cursor
-		var cost := _thread_cost(spider_position, anchors[preview_cursor]) if creates_thread else 0.0
-		if silk + 0.01 >= cost:
-			preview_anchor = preview_cursor
-			return
-	preview_anchor = free_fallback
+		var cost := _thread_cost(spider_position, anchors[node]) if creates_thread else 0.0
+		var triangle_score := _triangle_completion_count(current_node, node)
+		var score := float(triangle_score) * 1000.0
+		# Medium connections are useful without making long jumps the automatic best choice.
+		score += 220.0 - absf(distance - 410.0) * 0.22
+		score += randf_range(0.0, 12.0)
+		var candidate := {
+			"node": node,
+			"distance": distance,
+			"cost": cost,
+			"triangles": triangle_score,
+			"score": score
+		}
+		if creates_thread and silk + 0.01 < cost:
+			continue
+		if creates_thread:
+			candidates.append(candidate)
+		else:
+			candidate["score"] = float(candidate["score"]) - 250.0
+			free_fallbacks.append(candidate)
+
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["score"]) > float(b["score"]))
+	free_fallbacks.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["score"]) > float(b["score"]))
+	var pool := candidates + free_fallbacks
+	for candidate in pool:
+		var node: int = candidate["node"]
+		var direction := (anchors[node] - spider_position).normalized()
+		var direction_is_distinct := true
+		for selected in preview_options:
+			var selected_direction := (anchors[selected] - spider_position).normalized()
+			if absf(direction.angle_to(selected_direction)) < 0.42:
+				direction_is_distinct = false
+				break
+		if direction_is_distinct or preview_options.is_empty():
+			preview_options.append(node)
+		if preview_options.size() >= PREVIEW_OPTION_COUNT:
+			break
+	if preview_options.size() < PREVIEW_OPTION_COUNT:
+		for candidate in pool:
+			var node: int = candidate["node"]
+			if not preview_options.has(node):
+				preview_options.append(node)
+			if preview_options.size() >= PREVIEW_OPTION_COUNT:
+				break
+	if not preview_options.is_empty():
+		preview_anchor = preview_options[0]
+
+
+func _preview_option_at(tap_position: Vector2) -> int:
+	var nearest := -1
+	var nearest_distance := PREVIEW_HIT_RADIUS
+	for node in preview_options:
+		var distance := tap_position.distance_to(anchors[node])
+		if distance < nearest_distance:
+			nearest = node
+			nearest_distance = distance
+	return nearest
+
+
+func _triangle_completion_count(origin: int, destination: int) -> int:
+	if origin < 0 or destination < 0:
+		return 0
+	var count := 0
+	for node in range(base_anchor_count):
+		if node == origin or node == destination:
+			continue
+		if _edge_exists(origin, node) and _edge_exists(destination, node):
+			count += 1
+	return count
 
 
 func _spawn_insect() -> void:
@@ -1250,7 +1336,7 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		radius = randf_range(9.0, 12.0)
 		speed = randf_range(155.0, 205.0)
 		required_strength = 16.0
-		escape_time = 5.0
+		escape_time = 4.1
 		struggle_damage = 6.0
 		auto_collect = false
 	elif roll > 0.84 and roll <= 0.97:
@@ -1259,7 +1345,7 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		radius = randf_range(13.0, 17.0)
 		speed = randf_range(115.0, 155.0)
 		required_strength = 55.0
-		escape_time = 3.5
+		escape_time = 3.0
 		struggle_damage = 13.0
 		auto_collect = false
 	elif roll > 0.97:
@@ -1268,12 +1354,13 @@ func _create_insect_spec(force_valuable: bool = false) -> Dictionary:
 		radius = randf_range(15.0, 19.0)
 		speed = randf_range(190.0, 245.0)
 		required_strength = 108.0
-		escape_time = 2.2
+		escape_time = 1.95
 		struggle_damage = 30.0
 		auto_collect = false
 	var from_left := randf() < 0.5
 	var y := randf_range(340.0, 1530.0)
 	speed *= (1.0 + float(hunt_level - 1) * 0.07) * (1.0 + vibration * 0.0015) * contract_speed_multiplier
+	escape_time *= pow(0.94, hunt_level - 1)
 	return {
 		"kind": kind,
 		"value": value,
@@ -1792,9 +1879,12 @@ func _collect_insect(index: int, allow_chain: bool = true) -> void:
 		reward *= 2
 		status_label.text = "KRITISCHER FANG - DOPPELTE NAHRUNG!"
 	food += reward
-	hunt_food += reward
+	if was_boss:
+		hunt_boss_food += reward
+	else:
+		hunt_food = mini(hunt_goal, hunt_food + reward)
 	xp += maxi(1, roundi(float(value) * xp_multiplier))
-	var silk_gain := (4.0 + float(value) * 2.0) * local_silk_multiplier
+	var silk_gain := (3.0 + float(value) * 1.4) * local_silk_multiplier
 	silk = minf(silk_max, silk + silk_gain)
 	vibration = minf(100.0, vibration + 1.5 + float(value) * 0.65)
 	if not was_auto and tutorial_step == 3 and hunt_level == 1:
@@ -1831,7 +1921,16 @@ func _collect_insect(index: int, allow_chain: bool = true) -> void:
 
 func _boss_build_ready() -> bool:
 	# The first hunt teaches the build loop before testing it against a boss.
-	return hunt_level > 1 or level >= 3
+	var build_ready := hunt_level > 1 or level >= 3
+	return build_ready and _hunt_elapsed() >= _boss_unlock_time()
+
+
+func _boss_unlock_time() -> float:
+	return FIRST_BOSS_UNLOCK_TIME if hunt_level == 1 else 48.0
+
+
+func _hunt_elapsed() -> float:
+	return maxf(0.0, elapsed_time - hunt_started_at)
 
 
 func _repair_weakest_thread(amount: float) -> void:
@@ -1864,7 +1963,7 @@ func _complete_hunt_level() -> void:
 		level_complete_detail.text = "5 Jagdgebiete überstanden\n%d Nahrung gesammelt · Abschlussbeute besiegt" % food
 		level_complete_button.text = "NEUE JAGD BEGINNEN"
 	else:
-		level_complete_detail.text = "%d Nahrung gesammelt\n%s erfüllt · Miniboss besiegt" % [hunt_food, contract_name]
+		level_complete_detail.text = "%d/%d Jagdziel erfüllt\n+%d Bossbeute · %s" % [hunt_food, hunt_goal, hunt_boss_food, contract_name]
 		level_complete_button.text = "WEITER ZU LEVEL %d" % (hunt_level + 1)
 	level_complete_button.visible = true
 	status_label.text = "JAGDAUFTRAG ERFÜLLT"
@@ -1903,7 +2002,9 @@ func _continue_after_result() -> void:
 func _start_next_hunt_level() -> void:
 	hunt_level += 1
 	hunt_food = 0
-	hunt_goal = roundi(24.0 * pow(1.32, hunt_level - 1))
+	hunt_goal = roundi(float(BASE_HUNT_GOAL) * pow(1.30, hunt_level - 1))
+	hunt_boss_food = 0
+	hunt_started_at = elapsed_time
 	boss_active = false
 	emergency_reserve_used = false
 	level_complete = false
@@ -1948,8 +2049,13 @@ func _update_threads(delta: float) -> void:
 	if active_count == 0 and not edges.is_empty() and silk < 10.0:
 		_end_run()
 	elif not game_over:
-		var recovery_rate := 0.45 if _reactive_prey_count() > 0 else 0.8
-		silk = minf(silk_max, silk + delta * recovery_rate)
+		if _reactive_prey_count() > 0:
+			calm_recovery_timer = 0.0
+		else:
+			calm_recovery_timer += delta
+		if calm_recovery_timer >= 2.0:
+			var passive_cap := silk_max * 0.72
+			silk = minf(passive_cap, silk + delta * 0.58)
 
 
 func _try_emergency_reserve() -> void:
@@ -2114,7 +2220,7 @@ func _choose_upgrade(choice: int) -> void:
 
 	xp -= xp_target
 	level += 1
-	xp_target = roundi(8.0 * pow(1.45, level - 1))
+	xp_target = roundi(10.0 * pow(1.5, level - 1))
 	upgrade_open = false
 	upgrade_overlay.visible = false
 	upgrade_reroll_button.visible = false
@@ -2279,6 +2385,7 @@ func _update_hud() -> void:
 	else:
 		lure_button.text = "ZUPFEN %.0f s" % ceilf(lure_cooldown) if lure_cooldown > 0.0 else "NETZ ZUPFEN"
 	if boss_active:
+		tutorial_banner.visible = false
 		var active_boss_name := "MINIBOSS"
 		for insect in insects:
 			if insect["boss"]:
@@ -2286,7 +2393,12 @@ func _update_hud() -> void:
 				break
 		hunt_goal_label.text = "LEVEL %d · %s" % [hunt_level, active_boss_name]
 	elif hunt_food >= hunt_goal and not _boss_build_ready():
-		hunt_goal_label.text = "JAGDZIEL ERFÜLLT  ·  NOCH %d UPGRADE BIS BOSS" % maxi(0, 3 - level)
+		var upgrades_missing := maxi(0, 3 - level) if hunt_level == 1 else 0
+		var seconds_missing := maxi(0, ceili(_boss_unlock_time() - _hunt_elapsed()))
+		if upgrades_missing > 0:
+			hunt_goal_label.text = "JAGDZIEL ERFÜLLT  ·  NOCH %d UPGRADE BIS BOSS" % upgrades_missing
+		else:
+			hunt_goal_label.text = "JAGDZIEL ERFÜLLT  ·  NETZ STABILISIEREN %d s" % seconds_missing
 	else:
 		hunt_goal_label.text = "JAGDZIEL L%d  ·  NAHRUNG %d/%d" % [hunt_level, hunt_food, hunt_goal]
 	build_label.text = _build_summary_text()
@@ -2307,7 +2419,7 @@ func _update_tutorial_banner() -> void:
 	tutorial_banner.visible = true
 	match tutorial_step:
 		0:
-			tutorial_label.text = "1/4  TIPPE AUF DEN LEUCHTENDEN ZIELPUNKT"
+			tutorial_label.text = "1/4  WÄHLE EINES VON DREI NETZZIELEN"
 		1:
 			tutorial_label.text = "2/4  BAUE EIN DREIECK ALS FANGTASCHE"
 		2:
@@ -2373,7 +2485,7 @@ func _draw_background() -> void:
 func _draw_anchors() -> void:
 	for i in range(base_anchor_count):
 		var color := Color(HONEY, 0.18)
-		if i == preview_anchor:
+		if preview_options.has(i):
 			color = Color(SKY, 0.35)
 		draw_circle(anchors[i], 12.0, color)
 		draw_circle(anchors[i], 4.0, Color(HONEY, 0.7))
@@ -2579,13 +2691,26 @@ func _draw_capture_flashes() -> void:
 
 
 func _draw_preview() -> void:
-	if preview_anchor < 0 or game_over:
+	if preview_options.is_empty() or game_over:
 		return
-	var target := anchors[preview_anchor]
-	draw_dashed_line(spider_position, target, Color(SKY, 0.34), 3.0, 18.0, true)
-	draw_circle(target, 27.0, Color(SKY, 0.11))
-	draw_arc(target, 27.0, 0.0, TAU, 32, SKY, 4.0, true)
-	draw_circle(target, 6.0, HONEY)
+	var pulse := 0.5 + sin(elapsed_time * 4.0) * 0.5
+	for option_index in range(preview_options.size()):
+		var node := preview_options[option_index]
+		var target := anchors[node]
+		var triangle_count := _triangle_completion_count(current_node, node)
+		var distance := spider_position.distance_to(target)
+		var edge_index := _edge_index(current_node, node)
+		var creates_thread := edge_index < 0 or edge_health[edge_index] <= 0.0
+		var cost := roundi(_thread_cost(spider_position, target)) if creates_thread else 0
+		var target_color := HONEY if triangle_count > 0 else SKY
+		draw_dashed_line(spider_position, target, Color(target_color, 0.22), 3.0, 20.0, true)
+		draw_circle(target, 36.0 + pulse * 3.0, Color(DARK_MOSS, 0.72))
+		draw_arc(target, 37.0 + pulse * 3.0, 0.0, TAU, 32, Color(target_color, 0.92), 5.0, true)
+		draw_circle(target, 7.0, HONEY)
+		var label := "FANGTASCHE" if triangle_count > 0 else ("KURZ" if distance < 430.0 else "WEIT")
+		var cost_text := "FREI" if cost <= 0 else "-%d" % cost
+		draw_string(FADENSCHNITT_DISPLAY_FONT, target + Vector2(-58.0, -54.0), label, HORIZONTAL_ALIGNMENT_CENTER, 116.0, 18, target_color)
+		draw_string(FADENSCHNITT_DISPLAY_FONT, target + Vector2(-32.0, 66.0), cost_text, HORIZONTAL_ALIGNMENT_CENTER, 64.0, 18, CREAM)
 
 
 func _draw_spider(position: Vector2) -> void:
